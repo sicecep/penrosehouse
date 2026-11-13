@@ -37,6 +37,17 @@ p{margin:0;font-size:15px;max-width:52ch}
 .swatches li{display:flex;gap:8px;align-items:center;min-width:0}
 .swatches i{width:14px;height:14px;border-radius:2px;background:var(--c);border:1px solid rgba(0,0,0,.18);flex:none}
 @media (max-width:760px){.swatches{grid-template-columns:1fr}}
+.ana-row{display:flex;gap:14px;align-items:flex-start}
+.ana-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.mini-fig{flex:none;width:92px;margin:0;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+.mini-fig svg{width:100%;height:auto;display:block}
+.mini-fig figcaption{font-family:var(--f-mono);font-size:10px;color:var(--ink-2);line-height:1.3}
+.chips{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;line-height:1.3}
+.chips li{display:flex;gap:6px;align-items:center;min-width:0}
+.chips i{width:12px;height:10px;border-radius:2px;flex:none;border:1px solid rgba(0,0,0,.15)}
+.ovl-legend{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:8px 12px;max-width:min(560px,calc(100vw - 32px));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ovl-legend[hidden]{display:none}
+@media (max-width:760px){.mini-fig{width:66px}.chips{font-size:11px}}
 .hint{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
 .dock{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;max-width:calc(100vw - 32px)}
 .pill{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
@@ -75,6 +86,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
 <div class="dock" id="dock">
   <button type="button" id="exploreBtn" class="pill">Jelajahi 3D</button>
   <div id="tools" class="tools" hidden>
+    <div id="ovlLegend" class="ovl-legend" hidden></div>
     <div class="seg" role="group" aria-label="Rumah">
       <button type="button" data-house="reno" aria-pressed="true">Renovasi</button>
       <button type="button" data-house="existing" aria-pressed="false">Eksisting</button>
@@ -83,6 +95,12 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
       <button type="button" data-view="house" aria-pressed="true">Seluruh rumah</button>
       <button type="button" data-view="upper" aria-pressed="false">Lantai 2</button>
       <button type="button" data-view="ground" aria-pressed="false">Lantai 1</button>
+    </div>
+    <div class="seg" role="group" aria-label="Analisis">
+      <button type="button" data-ovl="none" aria-pressed="true">Tanpa analisis</button>
+      <button type="button" data-ovl="zone" aria-pressed="false">Zonasi</button>
+      <button type="button" data-ovl="circ" aria-pressed="false">Sirkulasi</button>
+      <button type="button" data-ovl="priv" aria-pressed="false">Privasi</button>
     </div>
     <div class="seg">
       <button type="button" id="airBtn" aria-pressed="false">Aliran udara</button>
@@ -156,9 +174,42 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
       <dl class="facts"><dt>35.2 m²</dt><dd>Ruang keluarga, makan, dapur</dd><dt>11.6 m²</dt><dd>Kamar tamu</dd><dt>7.2 m²</dt><dd>Kamar ART + mini WC</dd><dt>10.0 m²</dt><dd>Laundry &amp; servis</dd></dl>
     </div>
   </section>
+  <section class="step" data-name="Zonasi">
+    <div class="card">
+      <div class="eyebrow">06 · Zonasi ruang</div>
+      <h2>Zonasi ruang</h2>
+      <div class="ana-row">
+        <div class="ana-txt"><p>Publik di sisi jalan, keluarga di tengah, privat di belakang dan di lantai 2. Servis punya lorong sendiri; zona ibadah tenang di belakang.</p><ul class="chips"><li><i style="background:#e2a546"></i>Publik / penerimaan</li><li><i style="background:#5f9fc4"></i>Keluarga / bersama</li><li><i style="background:#8b76bd"></i>Privat / istirahat</li><li><i style="background:#a39a52"></i>Servis</li><li><i style="background:#c8673f"></i>Ibadah</li><li><i style="background:#a8a39a"></i>Sirkulasi</li><li><i style="background:#72ad60"></i>Terbuka ke langit / void</li></ul></div>
+        <figure class="mini-fig"><svg viewBox="-0.2 -0.2 9.4 18.2" class="mini" aria-hidden="true"><rect x="0" y="0" width="9.0" height="17.8" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".08"/><rect x="0" y="12.3" width="9" height="5.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".06" stroke-dasharray=".25 .2"/><rect x="0.05" y="8.850000000000001" width="3.1999999999999997" height="3.4" rx=".12" fill="#8b76bd"/><rect x="5.35" y="8.850000000000001" width="2.6" height="3.4" rx=".12" fill="#8b76bd"/><rect x="6.25" y="6.45" width="1.6999999999999997" height="2.3000000000000003" rx=".12" fill="#8b76bd"/><rect x="0.05" y="0.05" width="4.5" height="4.300000000000001" rx=".12" fill="#8b76bd"/><rect x="4.6499999999999995" y="3.250000000000001" width="3.3000000000000003" height="1.0999999999999992" rx=".12" fill="#8b76bd"/><rect x="4.6499999999999995" y="2.05" width="3.3000000000000003" height="1.100000000000001" rx=".12" fill="#8b76bd"/><rect x="3.3499999999999996" y="8.850000000000001" width="1.9" height="3.4" rx=".12" fill="#a8a39a"/><rect x="0.05" y="7.650000000000001" width="6.1000000000000005" height="1.0999999999999992" rx=".12" fill="#a8a39a"/><rect x="4.45" y="6.45" width="1.6999999999999997" height="1.100000000000001" rx=".12" fill="#a8a39a"/><rect x="4.45" y="4.45" width="3.4999999999999996" height="1.9" rx=".12" fill="#5f9fc4"/><rect x="0.05" y="4.45" width="4.300000000000001" height="3.100000000000001" rx=".12" fill="#72ad60"/><rect x="4.6499999999999995" y="0.05" width="4.300000000000001" height="1.9" rx=".12" fill="#72ad60"/><rect x="8.05" y="2.05" width="0.9" height="10.200000000000001" rx=".12" fill="#72ad60"/></svg><figcaption>Denah lantai 2</figcaption></figure>
+      </div>
+      <p class="hint">Model 3D menampilkan lantai 1; denah kecil menampilkan lantai 2.</p>
+    </div>
+  </section>
+  <section class="step" data-name="Sirkulasi">
+    <div class="card">
+      <div class="eyebrow">07 · Sirkulasi</div>
+      <h2>Sirkulasi &amp; aliran pergerakan</h2>
+      <div class="ana-row">
+        <div class="ana-txt"><p>Penghuni, tamu, dan servis punya jalurnya masing-masing. ART menuju dapur dan laundry lewat lorong tanpa melintasi ruang keluarga.</p><ul class="chips"><li><i style="background:#2f6fb0"></i>Penghuni</li><li><i style="background:#d08a12"></i>Tamu</li><li><i style="background:#7a5aa6"></i>Servis / ART</li><li><i style="background:#c0392b"></i>Wudu → salat</li></ul></div>
+        <figure class="mini-fig"><svg viewBox="-0.2 -0.2 9.4 18.2" class="mini" aria-hidden="true"><rect x="0" y="0" width="9.0" height="17.8" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".08"/><rect x="0" y="12.3" width="9" height="5.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".06" stroke-dasharray=".25 .2"/><rect x="0.05" y="8.850000000000001" width="3.1999999999999997" height="3.4" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="5.35" y="8.850000000000001" width="2.6" height="3.4" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="6.25" y="6.45" width="1.6999999999999997" height="2.3000000000000003" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="0.05" y="0.05" width="4.5" height="4.300000000000001" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="4.6499999999999995" y="3.250000000000001" width="3.3000000000000003" height="1.0999999999999992" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="4.6499999999999995" y="2.05" width="3.3000000000000003" height="1.100000000000001" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="3.3499999999999996" y="8.850000000000001" width="1.9" height="3.4" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="0.05" y="7.650000000000001" width="6.1000000000000005" height="1.0999999999999992" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="4.45" y="6.45" width="1.6999999999999997" height="1.100000000000001" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="4.45" y="4.45" width="3.4999999999999996" height="1.9" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="0.05" y="4.45" width="4.300000000000001" height="3.100000000000001" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="4.6499999999999995" y="0.05" width="4.300000000000001" height="1.9" rx=".12" fill="currentColor" fill-opacity=".08"/><rect x="8.05" y="2.05" width="0.9" height="10.200000000000001" rx=".12" fill="currentColor" fill-opacity=".08"/><path d="M3.8,8.65 L3.2,8.200000000000001 L2.7,8.700000000000001 L2.0,9.8" fill="none" stroke="#2f6fb0" stroke-width=".22" stroke-linejoin="round" stroke-linecap="round"/><path d="M3.8,8.65 L5.4,8.200000000000001 L5.75,8.700000000000001 L6.6,9.8" fill="none" stroke="#2f6fb0" stroke-width=".22" stroke-linejoin="round" stroke-linecap="round"/><path d="M5.4,8.200000000000001 L5.6,7.0 L6.25,7.0 L7.1,7.4" fill="none" stroke="#2f6fb0" stroke-width=".22" stroke-linejoin="round" stroke-linecap="round"/><path d="M5.6,7.0 L5.6,5.4 L6.0,4.5 L6.0,3.8000000000000007 L4.7,3.8500000000000014 L2.4,2.9000000000000004" fill="none" stroke="#2f6fb0" stroke-width=".22" stroke-linejoin="round" stroke-linecap="round"/><path d="M6.0,3.8000000000000007 L5.4,3.3000000000000007 L5.4,2.6000000000000014" fill="none" stroke="#2f6fb0" stroke-width=".22" stroke-linejoin="round" stroke-linecap="round"/></svg><figcaption>Denah lantai 2</figcaption></figure>
+      </div>
+      <p class="hint">Usulan: bukaan 0.9 m dari carport ke taman depan, dan pintu dari tempat wudu ke mushalla.</p>
+    </div>
+  </section>
+  <section class="step" data-name="Privasi">
+    <div class="card">
+      <div class="eyebrow">08 · Privasi visual &amp; akustik</div>
+      <h2>Privasi visual &amp; akustik</h2>
+      <div class="ana-row">
+        <div class="ana-txt"><p>Privasi meningkat dari sisi jalan ke kamar tidur. Tangga, lemari, dan kamar mandi meredam suara antar ruang; tanda merah adalah sumber bising yang perlu ditangani.</p><ul class="chips"><li><i style="background:#f0c76a"></i>Publik</li><li><i style="background:#9fcbb4"></i>Semi-publik (tamu)</li><li><i style="background:#6aa0c0"></i>Semi-privat (keluarga, servis)</li><li><i style="background:#4b5a8c"></i>Privat</li><li><i style="background:#c0392b"></i>Sumber bising</li><li><i style="background:#8b7fc0"></i>Penyangga akustik</li></ul></div>
+        <figure class="mini-fig"><svg viewBox="-0.2 -0.2 9.4 18.2" class="mini" aria-hidden="true"><rect x="0" y="0" width="9.0" height="17.8" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".08"/><rect x="0" y="12.3" width="9" height="5.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".06" stroke-dasharray=".25 .2"/><rect x="3.3499999999999996" y="8.850000000000001" width="1.9" height="3.4" rx=".12" fill="#6aa0c0"/><rect x="0.05" y="7.650000000000001" width="6.1000000000000005" height="1.0999999999999992" rx=".12" fill="#6aa0c0"/><rect x="4.45" y="6.45" width="1.6999999999999997" height="1.100000000000001" rx=".12" fill="#6aa0c0"/><rect x="4.45" y="4.45" width="3.4999999999999996" height="1.9" rx=".12" fill="#6aa0c0"/><rect x="0.05" y="8.850000000000001" width="3.1999999999999997" height="3.4" rx=".12" fill="#4b5a8c"/><rect x="5.35" y="8.850000000000001" width="2.6" height="3.4" rx=".12" fill="#4b5a8c"/><rect x="6.25" y="6.45" width="1.6999999999999997" height="2.3000000000000003" rx=".12" fill="#4b5a8c"/><rect x="0.05" y="0.05" width="4.5" height="4.300000000000001" rx=".12" fill="#4b5a8c"/><rect x="4.6499999999999995" y="2.05" width="3.3000000000000003" height="2.3000000000000003" rx=".12" fill="#4b5a8c"/><circle cx="4.5" cy="16.3" r=".32" fill="#c0392b"/><circle cx="4.5" cy="16.3" r=".7" fill="none" stroke="#c0392b" stroke-width=".1"/><circle cx="1.2" cy="7.100000000000001" r=".32" fill="#c0392b"/><circle cx="1.2" cy="7.100000000000001" r=".7" fill="none" stroke="#c0392b" stroke-width=".1"/></svg><figcaption>Denah lantai 2</figcaption></figure>
+      </div>
+      <p class="hint">Tangani: sekat kisi oak di hall, atap kanopi berinsulasi, bantalan anti-getar di bawah mesin cuci.</p>
+    </div>
+  </section>
   <section class="step" data-name="Taman">
     <div class="card">
-      <div class="eyebrow">06 · Taman belakang</div>
+      <div class="eyebrow">09 · Taman belakang</div>
       <h2>Menghadap taman</h2>
       <p>Mushalla berada di balik pintu kaca yang menghadap taman belakang, dengan saf salat diarahkan ke <span class="qib">kiblat 295°</span>. Teras belakang beratap menghubungkan dapur, lorong, dan taman.</p>
       <dl class="facts"><dt>2.0 × 2.4 m</dt><dd>Mushalla untuk 2 orang, tempat wudu di sebelahnya</dd><dt>4.0 × 2.0 m</dt><dd>Taman belakang, terbuka ke langit</dd></dl>
@@ -166,7 +217,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   </section>
   <section class="step" data-name="Sisi barat">
     <div class="card">
-      <div class="eyebrow">07 · Fasad barat</div>
+      <div class="eyebrow">10 · Fasad barat</div>
       <h2>Peneduh untuk sore hari</h2>
       <p>Kamar utama menghadap barat, jadi jendelanya diberi sirip vertikal aluminium motif kayu oak. Lantai 2 berhenti sebelum taman belakang agar taman tetap terbuka ke langit.</p>
     </div>
@@ -572,6 +623,57 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     return { curve, n, arr, geo, seed: Array.from({ length: n }, (_, i) => i / n + Math.random() * 0.01) };
   });
 
+  // ---------- ANALYSIS OVERLAYS: zoning, circulation, privacy ----------
+  const ANA = {"zones":{"pub":["#e2a546","Publik / penerimaan"],"fam":["#5f9fc4","Keluarga / bersama"],"priv":["#8b76bd","Privat / istirahat"],"svc":["#a39a52","Servis"],"wor":["#c8673f","Ibadah"],"circ":["#a8a39a","Sirkulasi"],"open":["#72ad60","Terbuka ke langit / void"]},"zoneRects":{"gf":[["pub",0,0,5.6,5.5],["pub",5.6,0,8.0,2.5],["pub",5.6,2.5,8.0,5.5],["pub",5.3,5.5,6.6,7.0],["circ",6.6,5.5,8.0,7.0],["circ",5.3,7.0,8.0,9.0],["circ",3.3,5.5,5.3,9.0],["priv",0,5.5,3.3,9.0],["fam",0,9.0,8.0,13.4],["fam",6.4,13.4,8.0,15.8],["wor",3.0,13.4,4.4,15.8],["wor",4.4,13.4,6.4,15.8],["svc",0,13.4,3.0,15.8],["svc",0,15.8,5.0,17.8],["svc",8.0,0,9.0,15.8],["open",5.0,15.8,9.0,17.8]],"uf":[["priv",0,5.5,3.3,9.0],["priv",5.3,5.5,8.0,9.0],["priv",6.2,9.0,8.0,11.4],["priv",0,13.4,4.6,17.8],["priv",4.6,13.4,8.0,14.6],["priv",4.6,14.6,8.0,15.8],["circ",3.3,5.5,5.3,9.0],["circ",0,9.0,6.2,10.2],["circ",4.4,10.2,6.2,11.4],["fam",4.4,11.4,8.0,13.4],["open",0,10.2,4.4,13.4],["open",4.6,15.8,9.0,17.8],["open",8.0,5.5,9.0,15.8]]},"flows":{"res":["#2f6fb0","Penghuni"],"gst":["#d08a12","Tamu"],"svc":["#7a5aa6","Servis / ART"],"wor":["#c0392b","Wudu → salat"]},"flowPaths":{"gf":[["res",[[6.9,-0.6],[6.9,2.4],[7.3,4.6],[7.3,6.4],[6.6,8.4],[5.6,9.4],[4.8,9.25]]],["res",[[6.6,8.4],[5.0,10.6],[2.4,11.4]]],["gst",[[6.6,-0.6],[6.6,2.4],[6.9,4.6],[7.05,6.1],[6.75,6.1]]],["gst",[[7.05,6.1],[6.9,8.0],[4.6,9.6],[2.7,9.2],[2.0,8.1]]],["svc",[[8.5,-0.6],[8.5,14.6],[7.2,14.6],[6.95,13.5],[6.6,12.6]]],["svc",[[8.5,14.6],[8.5,16.8],[5.6,16.75],[3.2,16.75],[1.5,16.4],[1.5,15.0]]],["wor",[[2.6,11.9],[3.7,12.9],[3.7,14.6]]],["wor",[[3.7,14.6],[3.85,13.1],[5.35,13.1],[5.35,14.6]]]],"uf":[["res",[[3.8,9.15],[3.2,9.6],[2.7,9.1],[2.0,8.0]]],["res",[[3.8,9.15],[5.4,9.6],[5.75,9.1],[6.6,8.0]]],["res",[[5.4,9.6],[5.6,10.8],[6.25,10.8],[7.1,10.4]]],["res",[[5.6,10.8],[5.6,12.4],[6.0,13.3],[6.0,14.0],[4.7,13.95],[2.4,14.9]]],["res",[[6.0,14.0],[5.4,14.5],[5.4,15.2]]]]},"stair":[[4.8,9.25,0.25],[4.8,6.6,1.95],[4.3,6.0,1.95],[3.8,6.6,1.95],[3.8,9.15,3.65]],"priv":{"1":["#f0c76a","Publik"],"2":["#9fcbb4","Semi-publik (tamu)"],"3":["#6aa0c0","Semi-privat (keluarga, servis)"],"4":["#4b5a8c","Privat"]},"privRects":{"gf":[[1,0,0,5.6,5.5],[1,5.6,0,8.0,2.5],[1,5.6,2.5,8.0,5.5],[2,5.3,5.5,6.6,7.0],[2,6.6,5.5,8.0,7.0],[2,5.3,7.0,8.0,9.0],[2,0,9.0,4.4,13.4],[2,4.4,9.0,8.0,11.4],[3,3.3,5.5,5.3,9.0],[3,4.4,11.4,8.0,13.4],[3,3.0,13.4,6.4,15.8],[3,6.4,13.4,8.0,15.8],[3,0,15.8,5.0,17.8],[3,8.0,0,9.0,15.8],[3,5.0,15.8,9.0,17.8],[4,0,5.5,3.3,9.0],[4,0,13.4,3.0,15.8]],"uf":[[3,3.3,5.5,5.3,9.0],[3,0,9.0,6.2,10.2],[3,4.4,10.2,6.2,11.4],[3,4.4,11.4,8.0,13.4],[4,0,5.5,3.3,9.0],[4,5.3,5.5,8.0,9.0],[4,6.2,9.0,8.0,11.4],[4,0,13.4,4.6,17.8],[4,4.6,13.4,8.0,15.8]]},"buffers":{"gf":[[3.3,5.5,5.3,9.0],[5.3,5.5,6.6,7.0]],"uf":[[3.3,5.5,5.3,9.0],[4.6,13.4,8.0,14.6],[6.2,9.0,8.0,11.4]]},"noise":{"gf":[[2.8,0.9,"Jalan & mobil"],[4.2,11.0,"TV"],[7.6,12.1,"Dapur"],[0.6,17.35,"Mesin cuci"]],"uf":[[4.5,1.5,"Hujan di kanopi"],[1.2,10.7,"Suara R. keluarga lewat void"]]},"sight":{"line":[6.9,2.6,6.9,10.3],"screen":[6.3,8.85,7.95,8.85]},"overlook":[[8.0,7.3],[8.0,12.4]],"legend":{"zone":"<ul class=\"chips\"><li><i style=\"background:#e2a546\"></i>Publik / penerimaan</li><li><i style=\"background:#5f9fc4\"></i>Keluarga / bersama</li><li><i style=\"background:#8b76bd\"></i>Privat / istirahat</li><li><i style=\"background:#a39a52\"></i>Servis</li><li><i style=\"background:#c8673f\"></i>Ibadah</li><li><i style=\"background:#a8a39a\"></i>Sirkulasi</li><li><i style=\"background:#72ad60\"></i>Terbuka ke langit / void</li></ul>","circ":"<ul class=\"chips\"><li><i style=\"background:#2f6fb0\"></i>Penghuni</li><li><i style=\"background:#d08a12\"></i>Tamu</li><li><i style=\"background:#7a5aa6\"></i>Servis / ART</li><li><i style=\"background:#c0392b\"></i>Wudu → salat</li></ul>","priv":"<ul class=\"chips\"><li><i style=\"background:#f0c76a\"></i>Publik</li><li><i style=\"background:#9fcbb4\"></i>Semi-publik (tamu)</li><li><i style=\"background:#6aa0c0\"></i>Semi-privat (keluarga, servis)</li><li><i style=\"background:#4b5a8c\"></i>Privat</li><li><i style=\"background:#c0392b\"></i>Sumber bising</li><li><i style=\"background:#8b7fc0\"></i>Penyangga akustik</li></ul>"}};
+  const ovItems = [], circFlows = [], pulses = [], noiseLabels = [];
+  function ovMat(color, kind, base, floor) {
+    const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+    ovItems.push({ m, kind, base, floor }); return m;
+  }
+  const ovG = new THREE.Group(), ovU = new THREE.Group(); gGround.add(ovG); gUpper.add(ovU);
+  const FL = { gf: [ovG, 0.035], uf: [ovU, UF + 0.035] };
+  for (const fl of ['gf', 'uf']) {
+    const [grp, z] = FL[fl];
+    ANA.zoneRects[fl].forEach(([k, x0, y0, x1, y1]) => { if (fl === 'uf' && k === 'open') return;
+      box(grp, ovMat(ANA.zones[k][0], 'zone', 0.82, fl), x0 + 0.04, y0 + 0.04, z, x1 - 0.04, y1 - 0.04, z + 0.03); });
+    ANA.privRects[fl].forEach(([lv, x0, y0, x1, y1]) =>
+      box(grp, ovMat(ANA.priv[String(lv)][0], 'priv', 0.8, fl), x0 + 0.04, y0 + 0.04, z, x1 - 0.04, y1 - 0.04, z + 0.03));
+    ANA.buffers[fl].forEach(([x0, y0, x1, y1]) => box(grp, ovMat('#7a63c2', 'priv', 0.22, fl), x0 + 0.1, y0 + 0.1, z, x1 - 0.1, y1 - 0.1, z + CH * 0.9));
+    ANA.noise[fl].forEach(([x, y, txt]) => {
+      const zz = z + 1.1, sph = new THREE.Mesh(new THREE.SphereGeometry(0.17, 16, 12), ovMat('#c0392b', 'priv', 1, fl));
+      sph.position.copy(V(x, y, zz)); grp.add(sph);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.025, 8, 40), ovMat('#c0392b', 'priv', 0.8, fl));
+      ring.position.copy(V(x, y, zz)); grp.add(ring); pulses.push(ring);
+      const lb = label(txt, grp, x, y, zz + 0.65); noiseLabels.push({ s: lb, floor: fl });
+    });
+  }
+  // sightline from the front door + proposed oak slat screen
+  { const [x0, y0, x1, y1] = ANA.sight.line;
+    const c = new THREE.LineCurve3(V(x0, y0, 1.6), V(x1, y1, 1.6));
+    ovG.add(new THREE.Mesh(new THREE.TubeGeometry(c, 20, 0.06, 8, false), ovMat('#c0392b', 'priv', 0.95, 'gf')));
+    const [sx0, sy, sx1] = ANA.sight.screen, sm = ovMat('#b8875a', 'priv', 0.85, 'gf');
+    for (let x = sx0; x < sx1; x += 0.11) box(ovG, sm, x, sy - 0.03, 0, x + 0.05, sy + 0.03, 2.1); }
+  ANA.overlook.forEach(([x, y]) => { const cone = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.45, 12), ovMat('#c0392b', 'priv', 1, 'uf'));
+    cone.position.copy(V(x + 0.45, y, UF + 1.4)); cone.rotation.z = -Math.PI / 2; ovU.add(cone); });
+  // circulation: tubes, arrowheads and moving dots
+  function flowPath(pts3, color, grp, fl) {
+    const path = new THREE.CurvePath(); const P3 = pts3.map(p => V(p[0], p[1], p[2]));
+    for (let i = 0; i < P3.length - 1; i++) path.add(new THREE.LineCurve3(P3[i], P3[i + 1]));
+    grp.add(new THREE.Mesh(new THREE.TubeGeometry(path, P3.length * 24, 0.1, 8, false), ovMat(color, 'circ', 0.95, fl)));
+    const a = P3[P3.length - 2], b = P3[P3.length - 1], dir = b.clone().sub(a).normalize();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.6, 14), ovMat(color, 'circ', 1, fl));
+    cone.position.copy(b); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); grp.add(cone);
+    const len = path.getLength(), n = Math.max(4, Math.round(len * 1.6)), geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3);
+    geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+    const pm = new THREE.PointsMaterial({ color: '#ffffff', size: 0.34, map: dotTex, transparent: true, opacity: 0, depthWrite: false });
+    ovItems.push({ m: pm, kind: 'circ', base: 1, floor: fl });
+    const pts = new THREE.Points(geo, pm); pts.renderOrder = 12; grp.add(pts);
+    circFlows.push({ path, n, arr, geo, len });
+  }
+  ANA.flowPaths.gf.forEach(([k, pts]) => flowPath(pts.map(([x, y]) => [x, y, 0.3]), ANA.flows[k][0], ovG, 'gf'));
+  ANA.flowPaths.uf.forEach(([k, pts]) => flowPath(pts.map(([x, y]) => [x, y, UF + 0.3]), ANA.flows[k][0], ovU, 'uf'));
+  flowPath(ANA.stair, ANA.flows.res[0], ovG, 'gf');
+
   // ---------- camera keyframes (plan coords) ----------
   const K = [
     { p: [19, -13, 12], t: [4.5, 8.5, 3.0] },
@@ -580,6 +682,9 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     { p: [8.5, -3.5, 5.0], t: [8.4, 12, 0.8] },
     { p: [-7, 0.5, 21], t: [4.5, 10.5, 3.4] },
     { p: [13, -2.5, 19], t: [4.2, 9.5, 0] },
+    { p: [12.5, -4.5, 20.5], t: [4.3, 9.6, 0] },
+    { p: [-5.5, -3.5, 19.5], t: [4.6, 9.4, 0] },
+    { p: [14, 23.5, 18.5], t: [4.3, 9.2, 0] },
     { p: [6.4, 22.5, 6.2], t: [5.7, 15.0, 0.8] },
     { p: [-5, 31, 9.5], t: [3.5, 15, 4.6] },
     { p: [21, -15, 14], t: [4.5, 8.9, 3.0] },
@@ -587,7 +692,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   ];
   const vp = a => V(a[0], a[1], a[2]);
   const cam = vp(K[0].p).clone(), tgt = vp(K[0].t).clone();
-  const S = { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0 };
+  const S = { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0 };
 
   // ---------- scroll ----------
   gsap.registerPlugin(ScrollTrigger);
@@ -607,9 +712,12 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   tl.to(S, { air: 1 }, 2)
     .to(S, { roof: 1, lUF: 1, air: 0.55 }, 3)
     .to(S, { upper: 1, lUF: 0, lGF: 1 }, 4)
-    .to(S, { upper: 0, roof: 0, lGF: 0, air: 0, qibla: 1 }, 5)
-    .to(S, { qibla: 0 }, 6)
-    .to(S, { mix: 1 }, 8);
+    .to(S, { zone: 1, air: 0 }, 5)
+    .to(S, { zone: 0, circ: 1 }, 6)
+    .to(S, { circ: 0, priv: 1 }, 7)
+    .to(S, { priv: 0, upper: 0, roof: 0, lGF: 0, air: 0, qibla: 1 }, 8)
+    .to(S, { qibla: 0 }, 9)
+    .to(S, { mix: 1 }, 11);
 
   // step rail
   const sections = [...document.querySelectorAll('.step')];
@@ -655,7 +763,19 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   houseBtns.forEach(b => b.addEventListener('click', () => setHouse(b.dataset.house)));
   const VIEWS = { house: { roof: 0, upper: 0, lUF: 0, lGF: 0, qibla: 0 }, upper: { roof: 1, upper: 0, lUF: 1, lGF: 0, qibla: 0 }, ground: { roof: 1, upper: 1, lUF: 0, lGF: 1, qibla: 1 } };
   const viewBtns = [...document.querySelectorAll('[data-view]')], airBtn = document.getElementById('airBtn');
-  function setView(v) { gsap.to(S, { ...VIEWS[v], duration: 0.9, ease: 'power2.inOut' }); viewBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v))); }
+  const ovlBtns = [...document.querySelectorAll('[data-ovl]')], ovlLegend = document.getElementById('ovlLegend');
+  let curView = 'house';
+  function setOvl(v) {
+    gsap.to(S, { zone: +(v === 'zone'), circ: +(v === 'circ'), priv: +(v === 'priv'), duration: 0.6 });
+    ovlBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ovl === v)));
+    ovlLegend.hidden = v === 'none'; ovlLegend.innerHTML = v === 'none' ? '' : ANA.legend[v];
+    if (v !== 'none') { if (curView === 'house') setView('ground'); if (S.mix > 0.5) setHouse('reno');
+      const P1 = vp([12.5, -4.5, 21 + (curView === 'upper' ? 3.4 : 0)]), T1 = vp([4.3, 9.6, curView === 'upper' ? 3.4 : 0]);
+      gsap.to(cam, { x: P1.x, y: P1.y, z: P1.z, duration: 1, ease: 'power2.inOut' }); gsap.to(tgt, { x: T1.x, y: T1.y, z: T1.z, duration: 1, ease: 'power2.inOut' });
+      gsap.to(orbit, { yaw: 0, pitch: 0, zoom: 1, duration: 1 }); }
+  }
+  ovlBtns.forEach(b => b.addEventListener('click', () => setOvl(b.dataset.ovl)));
+  function setView(v) { curView = v; gsap.to(S, { ...VIEWS[v], duration: 0.9, ease: 'power2.inOut' }); viewBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v))); }
   viewBtns.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
   airBtn.addEventListener('click', () => { const on = airBtn.getAttribute('aria-pressed') !== 'true'; airBtn.setAttribute('aria-pressed', String(on)); gsap.to(S, { air: on ? 1 : 0, duration: 0.6 }); });
   document.getElementById('zoomIn').addEventListener('click', () => gsap.to(orbit, { zoom: Math.max(orbit.zoom * 0.8, 0.35), duration: 0.4 }));
@@ -669,14 +789,14 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   const exploreBtn = document.getElementById('exploreBtn'), tools = document.getElementById('tools');
   function enterExplore() {
     exploring = true; document.body.classList.add('exploring'); tools.hidden = false; if (lenis) lenis.stop();
-    overview(); setView('house'); houseBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.house === 'existing') === (S.mix > 0.5)))); airBtn.setAttribute('aria-pressed', 'false'); gsap.to(S, { air: 0, duration: 0.4 });
+    overview(); setView('house'); setOvl('none'); houseBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.house === 'existing') === (S.mix > 0.5)))); airBtn.setAttribute('aria-pressed', 'false'); gsap.to(S, { air: 0, duration: 0.4 });
     viewBtns[0].focus();
   }
   function exitExplore() {
     exploring = false; document.body.classList.remove('exploring'); tools.hidden = true; if (lenis) lenis.start();
     gsap.to(orbit, { yaw: 0, pitch: 0, zoom: 1, duration: 0.6 });
     const pr = tl.scrollTrigger ? tl.scrollTrigger.progress : 0;     // snap back to the current tour stop
-    gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0 });
+    gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0 });
     tl.progress(pr > 0.5 ? 0 : 1); tl.progress(pr);
     exploreBtn.focus();
   }
@@ -726,6 +846,14 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     ELGF.forEach(s => s.material.opacity = S.lGF * ne);
     qibla.visible = S.qibla * nr > 0.05; qibla.scale.setScalar(Math.max(S.qibla, 0.01));
     airMat.opacity = S.air * 0.9 * nr;
+    const fG = nr * (1 - S.roof * (1 - S.upper)), fU = nr * (1 - S.upper) * S.roof;
+    for (const o of ovItems) { const op = o.base * S[o.kind] * (o.floor === 'gf' ? fG : fU); o.m.opacity = op; o.m.visible = op > 0.004; }
+    noiseLabels.forEach(n => n.s.material.opacity = S.priv * (n.floor === 'gf' ? fG : fU));
+    if (S.priv > 0.01) { const k = 1 + ((time * 0.8) % 1) * 0.8; pulses.forEach(r => { r.scale.setScalar(k); r.rotation.x = Math.PI / 2; }); }
+    if (S.circ > 0.01) {
+      circFlows.forEach(f => { for (let i = 0; i < f.n; i++) { const u = ((i / f.n) + (reduced ? 0 : time * 0.9 / f.len)) % 1, p = f.path.getPointAt(u);
+        f.arr[i * 3] = p.x; f.arr[i * 3 + 1] = p.y + 0.12; f.arr[i * 3 + 2] = p.z; } f.geo.attributes.position.needsUpdate = true; });
+    }
     if (S.air > 0.01) {
       const speed = reduced ? 0 : 0.06;
       flows.forEach(f => {
