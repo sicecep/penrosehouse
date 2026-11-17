@@ -78,13 +78,42 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   p{font-size:14px}
   nav{display:none}
 }
+
+#walkBtn{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.dock-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+body.exploring .dock-row #walkBtn{display:none}
+body.walking .story,body.walking nav,body.walking .dock{visibility:hidden}
+body.walking #stage canvas{touch-action:none}
+#stage canvas.pointing{cursor:pointer}
+#dip{position:fixed;inset:0;background:#0d0f10;opacity:0;pointer-events:none;z-index:5}
+#walkUI[hidden]{display:none}
+#walkUI{position:fixed;inset:0;z-index:4;pointer-events:none}
+#walkUI .wcard{pointer-events:auto;position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(16px + env(safe-area-inset-top,0px));max-width:min(360px,calc(100vw - 32px));background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:4px}
+#walkUI .wcard .eyebrow{margin:0}
+#walkTitle{font-size:20px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance}
+#walkText{font-size:13.5px;line-height:1.45;margin:0;color:var(--ink-2)}
+#walkExit{all:unset;pointer-events:auto;cursor:pointer;position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(16px + env(safe-area-inset-top,0px));font-family:var(--f-mono);font-size:12px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px}
+#walkExit:focus-visible,#walkBar button:focus-visible{outline:2px solid var(--air);outline-offset:2px}
+#walkFoot{position:absolute;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#walkBar{pointer-events:auto;display:flex;gap:4px;overflow-x:auto;max-width:min(980px,100%);background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:4px;scrollbar-width:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#walkBar::-webkit-scrollbar{display:none}
+#walkBar button{all:unset;cursor:pointer;flex:none;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px;color:var(--ink);white-space:nowrap}
+#walkBar button[aria-pressed="true"]{background:var(--ink);color:#fff}
+#walkFoot .hint{pointer-events:none;background:var(--card);padding:4px 10px;border-radius:999px;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
+@media (max-width:760px){#walkTitle{font-size:17px}#walkText{font-size:13px}#walkUI .wcard{top:calc(62px + env(safe-area-inset-top,0px))}}
 </style>
 
 <div id="stage" aria-hidden="true"></div>
 <div id="fallback" hidden>Tampilan 3D tidak bisa dijalankan di browser ini (WebGL tidak tersedia). Denah 2D memuat desain yang sama.</div>
 
+<div id="dip"></div>
+<div id="walkUI" hidden>
+  <div class="wcard"><div class="eyebrow">Masuk ke rumah · setinggi mata 1.6 m</div><h2 id="walkTitle"></h2><p id="walkText"></p></div>
+  <button type="button" id="walkExit">Keluar</button>
+  <div id="walkFoot"><div class="hint">Seret untuk melihat 360° · ketuk lingkaran untuk berjalan · scroll atau cubit untuk memperlebar pandangan</div><div id="walkBar" role="group" aria-label="Ruang"></div></div>
+</div>
 <div class="dock" id="dock">
-  <button type="button" id="exploreBtn" class="pill">Jelajahi 3D</button>
+  <div class="dock-row"><button type="button" id="walkBtn" class="pill">Masuk ke rumah</button><button type="button" id="exploreBtn" class="pill">Jelajahi 3D</button></div>
   <div id="tools" class="tools" hidden>
     <div id="ovlLegend" class="ovl-legend" hidden></div>
     <div class="seg" role="group" aria-label="Rumah">
@@ -101,12 +130,14 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
       <button type="button" data-ovl="zone" aria-pressed="false">Zonasi</button>
       <button type="button" data-ovl="circ" aria-pressed="false">Sirkulasi</button>
       <button type="button" data-ovl="priv" aria-pressed="false">Privasi</button>
+      <button type="button" data-ovl="mep" aria-pressed="false">Utilitas</button>
     </div>
     <div class="seg">
       <button type="button" id="airBtn" aria-pressed="false">Aliran udara</button>
       <button type="button" id="zoomIn" aria-label="Perbesar">+</button>
       <button type="button" id="zoomOut" aria-label="Perkecil">−</button>
       <button type="button" id="resetBtn">Atur ulang</button>
+      <button type="button" id="walkBtn2">Masuk ke rumah</button>
       <button type="button" id="exitBtn" class="dark">Kembali ke tur</button>
     </div>
     <div class="hint" id="exploreHint">Seret untuk memutar · scroll atau cubit untuk zoom · Esc untuk keluar</div>
@@ -117,26 +148,26 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
 <main class="story" id="story">
   <section class="step" data-name="Rumah">
     <div class="card">
-      <div class="eyebrow">Konsep renovasi v3 · Bekasi</div>
+      <div class="eyebrow">Konsep renovasi v4 · Bekasi</div>
       <h1>Penrose House</h1>
       <p>Rumah dua lantai di lahan 9.0 × 17.8 m, dirancang ulang dengan satu gagasan: udara dan cahaya mengalir lurus menembus rumah.</p>
       <dl class="facts"><dt>Lahan</dt><dd>9.0 × 17.8 m, muka rumah menghadap timur</dd><dt>Lantai</dt><dd>2, tinggi antar lantai 3.4 m</dd><dt>Ruang</dt><dd>4 kamar tidur, mushalla, ruang keluarga terbuka</dd><dt>Gaya</dt><dd>Minimalis modern, sentuhan Japandi</dd></dl>
-      <div class="hint">Scroll untuk menjelajah ↓ · seret model untuk melihat sekeliling · atau buka “Jelajahi 3D”</div>
+      <div class="hint">Scroll untuk menjelajah ↓ · seret model untuk melihat sekeliling · atau buka “Jelajahi 3D” · klik pagar untuk masuk ke rumah</div>
     </div>
   </section>
   <section class="step" data-name="Jalan">
     <div class="card">
       <div class="eyebrow">01 · Muka depan</div>
       <h2>Tidak ada lantai di atas mobil</h2>
-      <p>Dua MPV parkir berdampingan di bawah kanopi baja ringan. Lantai 2 dimulai 5.5 m dari jalan, sehingga muka rumah terasa rendah dan terbuka.</p>
-      <dl class="facts"><dt>5.6 × 5.5 m</dt><dd>Carport untuk 2 MPV</dd><dt>2.4 × 3.0 m</dt><dd>Foyer, WC tamu di sebelahnya</dd></dl>
+      <p>Dua MPV parkir berdampingan di bawah kanopi baja ringan. Di garis jalan: pagar geser besi hollow hitam untuk mobil, pintu kayu oak terpisah untuk orang, dinding batu alam dengan papan nama, dan roster putih di depan lorong. Di lantai 2, setiap kamar depan punya balkon 1.2 m sendiri.</p>
+      <dl class="facts"><dt>5.6 × 5.5 m</dt><dd>Carport untuk 2 MPV</dd><dt>2.4 × 3.0 m</dt><dd>Foyer terbuka ke carport</dd></dl>
     </div>
   </section>
   <section class="step" data-name="Material">
     <div class="card">
       <div class="eyebrow">02 · Material</div>
       <h2>Minimalis dengan kehangatan Japandi</h2>
-      <p>Dinding putih yang tenang dan kusen aluminium charcoal ramping dengan kaca bening, dilembutkan kayu oak muda: kisi di foyer dan dinding tangga, plafon carport, dan sirip barat. Pagarnya plat besi berlubang hitam polos.</p>
+      <p>Dinding putih yang tenang dan kusen aluminium charcoal ramping dengan kaca bening, dilembutkan kayu oak muda: kisi di foyer dan dinding tangga, plafon carport, dan sirip barat. Pagar mobil dari besi hollow hitam vertikal, di sebelahnya pintu orang dari kayu oak, dinding batu alam dengan papan nama, dan roster beton putih.</p>
       <ul class="swatches">
         <li><i style="--c:#2a2e32"></i>Kusen aluminium charcoal</li>
         <li><i style="--c:#b5d0da"></i>Kaca bening</li>
@@ -146,7 +177,8 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
         <li><i style="--c:#dcd8cf"></i>Lantai terrazzo, oak di lantai 2</li>
         <li><i style="--c:#e3e1da"></i>Koral putih, batu pijakan</li>
         <li><i style="--c:#b9b7b0"></i>Dinding batas tekstur papan</li>
-        <li><i style="--c:#141618"></i>Pagar plat besi berlubang hitam</li>
+        <li><i style="--c:#141618"></i>Pagar besi hollow hitam</li>
+        <li><i style="--c:#9b978f"></i>Dinding batu alam, roster putih</li>
       </ul>
     </div>
   </section>
@@ -154,7 +186,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     <div class="card">
       <div class="eyebrow">03 · Lorong utara</div>
       <h2>Lorong 1 m terbuka ke langit</h2>
-      <p><span class="air">Jalur udara</span> mengalir dari pagar di sisi utara sampai taman belakang. Ruang keluarga terbuka ke lorong lewat pintu geser 2.4 m, dan udara panas keluar melalui void di atasnya.</p>
+      <p><span class="air">Jalur udara</span> masuk lewat roster di depan lorong dan mengalir di sisi utara sampai taman belakang. Ruang keluarga terbuka ke lorong lewat pintu geser 2.4 m, dan udara panas keluar melalui void di atasnya.</p>
       <dl class="facts"><dt>1.0 × 15.8 m</dt><dd>Lorong, terbuka di kedua lantai</dd><dt>Servis</dt><dd>Menuju laundry tanpa melintasi rumah</dd></dl>
     </div>
   </section>
@@ -162,7 +194,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     <div class="card">
       <div class="eyebrow">04 · Atap dibuka</div>
       <h2>Lantai 2</h2>
-      <p>Kamar anak di depan, galeri di sepanjang void di atas ruang keluarga, sudut keluarga, dan kamar utama di bagian belakang yang tenang.</p>
+      <p>Kamar anak di depan, masing-masing dengan pintu geser ke balkon berbingkai 1.2 m dengan sirip kayu dan pot tanaman, galeri di sepanjang void di atas ruang keluarga, sudut keluarga, dan kamar utama di bagian belakang yang tenang.</p>
       <dl class="facts"><dt>20.2 m²</dt><dd>Kamar utama + walk-in closet + KM dalam</dd><dt>11.6 / 9.5 m²</dt><dd>Kamar anak 1 dan 2, KM bersama</dd><dt>14.1 m²</dt><dd>Void di atas ruang keluarga</dd></dl>
     </div>
   </section>
@@ -207,9 +239,20 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
       <p class="hint">Tangani: sekat kisi oak di hall, atap kanopi berinsulasi, bantalan anti-getar di bawah mesin cuci.</p>
     </div>
   </section>
+  <section class="step" data-name="Utilitas">
+    <div class="card">
+      <div class="eyebrow">09 · Utilitas bangunan</div>
+      <h2>Udara, air, listrik dan Wi-Fi</h2>
+      <div class="ana-row">
+        <div class="ana-txt"><p>AC inverter di empat kamar tidur dengan unit luar tersembunyi di dudukan berkisi dan di dak atap. Satu pemanas air surya untuk semua shower; tandon bawah dan pompa pendorong memberi tekanan merata. Wi-Fi mesh 3 node menjangkau dua lantai, semuanya cukup dengan daya PLN 3.500 VA.</p><ul class="chips"><li><i style="background:#1c6fd1"></i>Air bersih dingin</li><li><i style="background:#d63c2f"></i>Air panas</li><li><i style="background:#0b7285"></i>Pipa refrigeran</li><li><i style="background:#7a3fb5"></i>Kabel data Cat6</li><li><i style="background:#ffffff"></i>AC unit dalam</li><li><i style="background:#9aa5ad"></i>AC unit luar</li><li><i style="background:#7a3fb555"></i>Node Wi-Fi mesh</li></ul></div>
+        <figure class="mini-fig"><svg viewBox="-0.2 -0.2 9.4 18.2" class="mini" aria-hidden="true"><rect x="0" y="0" width="9" height="17.8" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".08"/><rect x="0" y="12.3" width="9" height="5.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".06" stroke-dasharray=".25 .2"/><rect x="6.3" y="5.800000000000001" width="2.1000000000000005" height="2.4000000000000004" fill="#d63c2f" fill-opacity=".2" stroke="#d63c2f" stroke-width=".08"/><path d="M8.15,7.200000000000001 L7.4,7.200000000000001" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M7.9,7.200000000000001 L7.9,2.5500000000000007 L5.0,2.5500000000000007" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M8.15,7.200000000000001 L8.15,7.600000000000001 L7.6,7.600000000000001" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M7.75,6.550000000000001 L7.75,7.450000000000001 L7.3,7.450000000000001" fill="none" stroke="#d63c2f" stroke-width=".2"/><path d="M7.75,6.550000000000001 L7.75,2.75 L5.1,2.75" fill="none" stroke="#d63c2f" stroke-width=".2"/><path d="M0.3,3.200000000000001 L0.6,3.200000000000001 L0.6,1.3000000000000007 L3.65,1.3000000000000007 L3.65,1.0500000000000007" fill="none" stroke="#0b7285" stroke-width=".2"/><path d="M1.0,9.100000000000001 L1.0,9.25 L3.05,9.25 L3.05,12.600000000000001 L3.4,12.600000000000001" fill="none" stroke="#0b7285" stroke-width=".2"/><path d="M7.2,9.100000000000001 L7.2,9.25 L5.5,9.25 L5.5,12.600000000000001 L5.2,12.600000000000001" fill="none" stroke="#0b7285" stroke-width=".2"/><rect x="0.08" y="2.8000000000000007" width="0.21999999999999997" height="0.8000000000000007" fill="#0b7285"/><rect x="0.6" y="8.88" width="0.7999999999999999" height="0.22000000000000064" fill="#0b7285"/><rect x="6.8" y="8.88" width="0.7999999999999998" height="0.22000000000000064" fill="#0b7285"/><rect x="3.2" y="0.4499999999999993" width="0.8999999999999995" height="0.6000000000000014" fill="#0b7285"/><rect x="3.4" y="12.420000000000002" width="0.8000000000000003" height="0.4299999999999997" fill="#0b7285"/><rect x="4.4" y="12.420000000000002" width="0.7999999999999998" height="0.4299999999999997" fill="#0b7285"/><path d="M5.38,9.55 L5.0,5.9" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L4.45,2.9000000000000004" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L2.9,9.05" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L5.55,9.05" stroke="#7a3fb5" stroke-width=".16"/><circle cx="5.0" cy="5.9" r="6.0" fill="#7a3fb5" fill-opacity=".08" stroke="#7a3fb5" stroke-width=".08" stroke-dasharray=".3 .25"/></svg><figcaption>Denah lantai 2</figcaption></figure>
+      </div>
+      <p class="hint">Dinding lantai 2 dibuat tembus pandang agar pipa di kedua lantai terlihat.</p>
+    </div>
+  </section>
   <section class="step" data-name="Taman">
     <div class="card">
-      <div class="eyebrow">09 · Taman belakang</div>
+      <div class="eyebrow">10 · Taman belakang</div>
       <h2>Menghadap taman</h2>
       <p>Mushalla berada di balik pintu kaca yang menghadap taman belakang, dengan saf salat diarahkan ke <span class="qib">kiblat 295°</span>. Teras belakang beratap menghubungkan dapur, lorong, dan taman.</p>
       <dl class="facts"><dt>2.0 × 2.4 m</dt><dd>Mushalla untuk 2 orang, tempat wudu di sebelahnya</dd><dt>4.0 × 2.0 m</dt><dd>Taman belakang, terbuka ke langit</dd></dl>
@@ -217,7 +260,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   </section>
   <section class="step" data-name="Sisi barat">
     <div class="card">
-      <div class="eyebrow">10 · Fasad barat</div>
+      <div class="eyebrow">11 · Fasad barat</div>
       <h2>Peneduh untuk sore hari</h2>
       <p>Kamar utama menghadap barat, jadi jendelanya diberi sirip vertikal aluminium motif kayu oak. Lantai 2 berhenti sebelum taman belakang agar taman tetap terbuka ke langit.</p>
     </div>
@@ -404,7 +447,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   box(site, MS.slab, 0, 0, -SL, W, D, 0);
   box(site, MS.stone, 0.02, 0, 0, 5.58, 5.5, 0.012, false);                       // carport concrete
   box(site, MS.grass, 5.6, 0, 0, 8.0, 2.5, 0.02, false);                          // entry garden
-  [0.35, 0.95, 1.55, 2.1].forEach(y => box(site, MS.stone, 6.5, y, 0, 7.1, y + 0.4, 0.035, false));
+  [[6.15, 0.3], [6.3, 0.9], [6.45, 1.5], [6.55, 2.05]].forEach(([x, y]) => box(site, MS.stone, x, y, 0, x + 0.6, y + 0.4, 0.035, false));
   box(site, MS.gravel, 8.0, 0, 0, W, 15.8, 0.015, false);                         // aisle: white pebbles
   for (let y = 0.3; y < 15.4; y += 0.9) box(site, MS.stone, 8.2, y, 0, 8.8, y + 0.45, 0.03, false);
   box(site, MS.grass, 5.0, 15.8, 0, W, D, 0.02, false);                           // backyard lawn
@@ -415,24 +458,64 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   wall(site, MS, 5.6, 0, 5.6, 2.5, 0, 1.0, [], MS.bound);
   // carport canopy: black steel frame, oak slat ceiling
   const canopyG = new THREE.Group(); site.add(canopyG);
-  box(canopyG, MS.steel, 0, 0, 3.0, 5.6, 5.5, 3.06);
+  box(canopyG, MS.steel, 0, 0, 3.0, 5.6, 4.3, 3.06);
   box(canopyG, MS.steel, 0, 0, 2.86, 5.6, 0.12, 3.0);
-  for (let x = 0.08; x < 5.5; x += 0.12) box(canopyG, MS.oak, x, 0.12, 2.93, x + 0.06, 5.45, 2.99, false);
+  for (let x = 0.08; x < 5.5; x += 0.12) box(canopyG, MS.oak, x, 0.12, 2.93, x + 0.06, 4.25, 2.99, false);
   [0.15, 5.45].forEach(x => box(site, MS.steel, x - 0.06, 0.1, 0, x + 0.06, 0.22, 3.0));
-  // gates: black perforated steel plate in a black frame (holes are real cut-outs via alphaMap)
-  const perfCanvas = document.createElement('canvas'); perfCanvas.width = perfCanvas.height = 128;
-  { const x = perfCanvas.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#000';
-    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { x.beginPath(); x.arc(c * 16 + 8 + (r % 2) * 8, r * 16 + 8, 5.2, 0, Math.PI * 2); x.fill(); } }
-  const GATE_BLACK = '#141618';
+  // ---------- street frontage: black bar car gate | white pillar | oak people door | stone name wall | white roster ----------
+  const GATE_BLACK = '#141618', FENCE = 2.5;
   const gateFrame = new THREE.MeshStandardMaterial({ color: GATE_BLACK, roughness: 0.5, metalness: 0.5 }); gateFrame.userData.base = 1;
-  [[0.1, 5.55, 1.8], [5.65, 7.95, 1.0], [8.05, 8.95, 1.8]].forEach(([a, b, H]) => {
-    const t = new THREE.CanvasTexture(perfCanvas); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set((b - a) / 0.44, (H - 0.1) / 0.44); t.anisotropy = 8;
-    const plate = new THREE.MeshStandardMaterial({ color: GATE_BLACK, roughness: 0.55, metalness: 0.5, alphaMap: t, alphaTest: 0.5, side: THREE.DoubleSide });
-    plate.userData.base = 1;
-    box(site, plate, a + 0.05, -0.01, 0.06, b - 0.05, 0.01, H - 0.04);
-    box(site, gateFrame, a, -0.035, H - 0.04, b, 0.035, H + 0.02); box(site, gateFrame, a, -0.035, 0, b, 0.035, 0.06);
-    box(site, gateFrame, a, -0.035, 0, a + 0.05, 0.035, H + 0.02); box(site, gateFrame, b - 0.05, -0.035, 0, b, 0.035, H + 0.02);
-  });
+  const lampMat = new THREE.MeshStandardMaterial({ color: '#fff4dc', emissive: '#ffd08a', emissiveIntensity: 1.4 }); lampMat.userData.base = 1;
+  // car gate 0.10-5.40: two sliding leaves of 40 mm square bars (right leaf slides behind the left one to open)
+  const gateL = new THREE.Group(), gateR = new THREE.Group(); site.add(gateL, gateR);
+  [[gateL, 0.1, 2.75], [gateR, 2.75, 5.4]].forEach(([g, a, b]) => { const H = 2.2;
+    box(g, gateFrame, a, -0.04, 0, b, 0.04, 0.06); box(g, gateFrame, a, -0.04, H - 0.06, b, 0.04, H);
+    box(g, gateFrame, a, -0.04, H * 0.66, b, 0.04, H * 0.66 + 0.05);
+    box(g, gateFrame, a, -0.04, 0, a + 0.05, 0.04, H); box(g, gateFrame, b - 0.05, -0.04, 0, b, 0.04, H);
+    for (let x = a + 0.12; x < b - 0.1; x += 0.11) box(g, gateFrame, x, -0.02, 0.06, x + 0.04, 0.02, H - 0.06); });
+  // white pillar 5.40-5.95 with up/down wall lights + intercom
+  box(site, MS.wall, 5.4, -0.06, 0, 5.95, 0.3, FENCE);
+  box(site, gateFrame, 5.6, -0.12, 1.85, 5.75, -0.06, 2.15); box(site, lampMat, 5.62, -0.125, 1.88, 5.73, -0.11, 2.12, false);
+  box(site, gateFrame, 5.62, -0.09, 1.3, 5.73, -0.06, 1.48);
+  // people door 5.95-6.95: oak leaf with vertical grooves, long black pull handle, white lintel above; hinged at 5.975
+  box(site, MS.wall, 5.95, -0.06, 2.2, 6.95, 0.3, FENCE);
+  box(site, gateFrame, 5.95, -0.04, 0, 6.0, 0.04, 2.2); box(site, gateFrame, 6.9, -0.04, 0, 6.95, 0.04, 2.2); box(site, gateFrame, 5.95, -0.04, 2.15, 6.95, 0.04, 2.2);
+  const doorG = new THREE.Group(); doorG.position.copy(V(6.0, 0, 0)); site.add(doorG);
+  { const tmp = new THREE.Group();
+    box(tmp, MS.oak, 6.0, -0.025, 0.02, 6.9, 0.025, 2.15);
+    for (let x = 6.1; x < 6.86; x += 0.1) box(tmp, MS.car, x, -0.03, 0.02, x + 0.008, -0.024, 2.15, false);
+    box(tmp, gateFrame, 6.79, -0.1, 0.55, 6.82, -0.07, 1.75);
+    [0.62, 1.68].forEach(z => box(tmp, gateFrame, 6.795, -0.07, z, 6.815, -0.025, z + 0.03));
+    [...tmp.children].forEach(c => { c.position.sub(doorG.position); doorG.add(c); }); }
+  // natural stone name wall 6.95-8.00 with a backlit name plate, number and a wall light
+  const stoneTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#8c8984'; x.fillRect(0, 0, w, h);
+    let y = 0; while (y < h) { const rh = 18 + Math.random() * 22; let xx = -Math.random() * 40;
+      while (xx < w) { const rw = 40 + Math.random() * 70, g = 150 + Math.random() * 60 | 0;
+        x.fillStyle = `rgb(${g},${g - 3},${g - 8})`; x.fillRect(xx + 2, y + 2, rw - 4, rh - 4);
+        x.fillStyle = 'rgba(0,0,0,.10)'; x.fillRect(xx + 2, y + rh - 6, rw - 4, 4); xx += rw; } y += rh; } }, 1.75, 4.2);
+  const stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.92 }); stoneMat.userData.base = 1;
+  box(site, stoneMat, 6.95, -0.06, 0, 8.0, 0.3, FENCE);
+  const plateC = document.createElement('canvas'); plateC.width = 512; plateC.height = 160;
+  { const x = plateC.getContext('2d'); x.fillStyle = '#f6f1e6'; x.fillRect(0, 0, 512, 160);
+    x.fillStyle = '#2a2e32'; x.font = '600 64px "Instrument Sans", system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText('P E N R O S E', 256, 84); }
+  const plateTex = new THREE.CanvasTexture(plateC); plateTex.encoding = THREE.sRGBEncoding;
+  const plateMat = new THREE.MeshStandardMaterial({ map: plateTex, emissive: '#ffffff', emissiveMap: plateTex, emissiveIntensity: 0.55, roughness: 0.6 }); plateMat.userData.base = 1;
+  box(site, gateFrame, 7.05, -0.1, 1.48, 7.9, -0.06, 1.82); box(site, plateMat, 7.08, -0.105, 1.51, 7.87, -0.095, 1.79, false);
+  box(site, gateFrame, 7.35, -0.12, 2.12, 7.6, -0.06, 2.3); box(site, lampMat, 7.37, -0.125, 2.14, 7.58, -0.11, 2.28, false);
+  box(site, MS.stone, 6.95, -0.45, 0, 8.0, -0.06, 0.3);                      // street planter under the stone wall
+  [7.15, 7.5, 7.82].forEach(x => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 1), MS.green); s.position.copy(V(x, -0.25, 0.42)); s.castShadow = true; site.add(s); });
+  // white concrete roster screen 8.00-9.00 in front of the aisle (lets the air path in, closes the side)
+  const rosterC = document.createElement('canvas'); rosterC.width = rosterC.height = 128;
+  { const x = rosterC.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#000';
+    x.beginPath(); x.arc(64, 64, 40, 0, Math.PI * 2); x.fill();
+    [[0, 0], [128, 0], [0, 128], [128, 128]].forEach(([cx, cy]) => { x.beginPath(); x.arc(cx, cy, 30, 0, Math.PI * 2); x.fill(); });
+    x.fillStyle = '#fff'; x.fillRect(58, 14, 12, 100); x.fillRect(14, 58, 100, 12); }
+  const rosterTex = new THREE.CanvasTexture(rosterC); rosterTex.wrapS = rosterTex.wrapT = THREE.RepeatWrapping; rosterTex.repeat.set(4.6, 11.5);
+  const rosterMat = new THREE.MeshStandardMaterial({ color: '#f1efe9', roughness: 0.9, alphaMap: rosterTex, alphaTest: 0.5, side: THREE.DoubleSide }); rosterMat.userData.base = 1;
+  box(site, rosterMat, 8.04, 0.0, 0.1, 8.96, 0.1, FENCE - 0.1);
+  box(site, MS.wall, 8.0, -0.02, 0, 9.0, 0.12, 0.1); box(site, MS.wall, 8.0, -0.02, FENCE - 0.1, 9.0, 0.12, FENCE);
+  box(site, MS.wall, 7.98, -0.02, 0, 8.04, 0.12, FENCE); box(site, MS.wall, 8.96, -0.02, 0, 9.0, 0.12, FENCE);
   // cars
   [1.5, 4.1].forEach(cx => {
     box(site, MS.car, cx - 0.9, 0.5, 0.2, cx + 0.9, 5.1, 1.05);
@@ -450,8 +533,8 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   // ---------- ground floor ----------
   const GF = [
     [0, 5.5, 0, D, []], [0, D, 5.0, D, []],
-    [5.6, 2.5, 8.0, 2.5, [[6.3, 7.3, 'd']]], [5.6, 2.5, 5.6, 5.5, [[3.3, 4.7, 'w']]],
-    [8.0, 2.5, 8.0, 13.4, [[3.0, 5.0, 'w'], [7.3, 8.7, 'w'], [9.3, 11.7, 's'], [11.9, 13.1, 'w']]],
+    [5.6, 2.5, 8.0, 2.5, [[6.3, 7.3, 'o']]], [6.6, 5.5, 8.0, 5.5, [[6.75, 7.75, 'd']]],
+    [8.0, 2.5, 8.0, 13.4, [[3.0, 5.0, 'w'], [7.3, 8.7, 'w'], [9.0, 11.4, 's'], [11.6, 12.5, 'w']]],
     [0, 5.5, 6.6, 5.5, [[0.8, 2.5, 'w']]], [3.3, 5.5, 3.3, 9.0, []], [5.3, 5.5, 5.3, 9.0, []],
     [5.3, 7.0, 6.6, 7.0, []], [6.6, 5.5, 6.6, 7.0, [[5.7, 6.45, 'd']]], [0, 9.0, 3.3, 9.0, [[2.3, 3.1, 'd']]],
     [0, 13.4, 8.0, 13.4, [[3.15, 4.25, 'o'], [4.55, 6.2, 's'], [6.6, 7.3, 'd']]],
@@ -474,8 +557,8 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   }
   box(gGround, MG.slab, 3.35, 5.55, R * 9 - 0.15, 5.25, 6.5, R * 9);
   // kitchen counter + island, sofa, beds (light furniture for scale)
-  box(gGround, MG.oak, 7.35, 10.6, 0, 7.85, 13.3, 0.86); box(gGround, MG.stone, 7.33, 10.58, 0.86, 7.87, 13.32, 0.9); box(gGround, MG.oak, 5.0, 11.5, 0, 6.9, 12.2, 0.86); box(gGround, MG.stone, 4.98, 11.48, 0.86, 6.92, 12.22, 0.9);
-  box(gGround, MG.oak, 5.1, 9.4, 0.7, 7.3, 10.4, 0.75); [[5.2, 9.5], [7.1, 9.5], [5.2, 10.2], [7.1, 10.2]].forEach(([x, y]) => box(gGround, MG.oak, x, y, 0, x + 0.08, y + 0.08, 0.7)); box(gGround, MG.linen, 0.15, 9.6, 0, 1.0, 12.4, 0.75);
+  box(gGround, MG.oak, 7.35, 11.5, 0, 7.92, 12.55, 0.86); box(gGround, MG.stone, 7.33, 11.48, 0.86, 7.93, 12.57, 0.9); box(gGround, MG.alu, 7.25, 12.62, 0, 7.92, 13.32, 1.8); box(gGround, MG.oak, 5.0, 11.5, 0, 6.9, 12.2, 0.86); box(gGround, MG.stone, 4.98, 11.48, 0.86, 6.92, 12.22, 0.9);
+  box(gGround, MG.oak, 5.1, 9.4, 0.7, 7.3, 10.4, 0.75); [[5.2, 9.5], [7.1, 9.5], [5.2, 10.2], [7.1, 10.2]].forEach(([x, y]) => box(gGround, MG.oak, x, y, 0, x + 0.08, y + 0.08, 0.7)); 
   box(gGround, MG.oak, 0.15, 5.65, 0, 2.15, 7.25, 0.3); box(gGround, MG.linen, 0.2, 5.7, 0.3, 2.1, 7.2, 0.5); box(gGround, MG.linen, 0.1, 13.5, 0, 1.0, 15.5, 0.45);
   for (let i = 0; i < 3; i++) box(gGround, MG.inner, 0.3 + i * 0.75, 17.05, 0, 0.95 + i * 0.75, 17.7, 0.85);
   // prayer mats + qibla arrow
@@ -487,11 +570,20 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   const qibla = new THREE.ArrowHelper(new THREE.Vector3(0.42, 0, -0.91).normalize(), V(5.3, 13.7, 0.3), 1.6, 0xb5562a, 0.45, 0.3);
   qibla.visible = false; gGround.add(qibla);
 
+  // living: L-sofa facing the TV wall, coffee table, floating oak TV cabinet, oak slat acoustic wall, 65" TV
+  box(gGround, MG.linen, 0.2, 9.15, 0, 2.9, 10.05, 0.42); box(gGround, MG.linen, 0.15, 10.05, 0, 1.05, 11.7, 0.42);
+  box(gGround, MG.linen, 0.2, 9.15, 0.42, 2.9, 9.38, 0.82); box(gGround, MG.linen, 0.15, 9.15, 0.42, 0.38, 11.7, 0.82);
+  box(gGround, MG.oak, 1.5, 10.55, 0.34, 2.5, 11.35, 0.4); box(gGround, MG.car, 1.6, 10.65, 0, 2.4, 11.25, 0.34);
+  slats(gGround, MG.oak, 0.12, 3.05, 13.335, 0, 2.9);   // slat panel just proud of the back wall
+  box(gGround, MG.oak, 0.35, 12.98, 0.22, 2.95, 13.32, 0.58); box(gGround, MG.car, 0.4, 12.97, 0.24, 2.9, 12.99, 0.56, false);
+  [0.95, 1.65, 2.35].forEach(x => box(gGround, MG.oak, x - 0.004, 12.965, 0.26, x + 0.004, 12.975, 0.54, false));
+  box(gGround, MG.car, 0.95, 13.22, 0.85, 2.35, 13.28, 1.68);
+  box(gGround, MG.oak, 7.45, 2.6, 0, 7.92, 4.6, 0.45);   // shoe bench
   // ---------- upper floor ----------
   [[0, 5.5, 3.3, 10.2], [5.3, 5.5, 8.0, 10.2], [3.3, 9.0, 5.3, 10.2], [4.4, 10.2, 8.0, 13.4], [0, 13.4, 8.0, 15.8], [0, 15.8, 4.6, D]]
     .forEach(([x0, y0, x1, y1]) => { box(gUpper, MU.slab, x0, y0, UF - SL, x1, y1, UF - 0.02); box(gUpper, MU.oakFloor, x0, y0, UF - 0.02, x1, y1, UF); });
   const UFW = [
-    [0, 5.5, 0, D, []], [0, D, 4.6, D, [[0.8, 3.8, 'w']]], [0, 5.5, 8.0, 5.5, [[0.7, 2.6, 'w'], [5.8, 7.6, 'w']]],
+    [0, 5.5, 0, D, []], [0, D, 4.6, D, [[0.8, 3.8, 'w']]], [0, 5.5, 8.0, 5.5, [[0.5, 2.4, 's'], [6.0, 7.8, 's']]],
     [8.0, 5.5, 8.0, 15.8, [[6.2, 8.4, 'w'], [9.6, 10.8, 'w'], [11.7, 13.1, 'w']]],
     [4.6, 13.4, 4.6, D, [[13.55, 14.35, 'd'], [16.2, 17.4, 'w']]], [4.6, 15.8, 8.0, 15.8, [[5.6, 6.8, 'w']]],
     [3.3, 5.5, 3.3, 9.0, []], [5.3, 5.5, 5.3, 9.0, []], [0, 9.0, 3.3, 9.0, [[2.3, 3.1, 'd']]], [5.3, 9.0, 8.0, 9.0, [[5.4, 6.1, 'd']]],
@@ -502,8 +594,40 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   wall(gUpper, MU, 0, 10.2, 4.4, 10.2, UF, 1.0, [], MU.glass, 0.03); box(gUpper, MU.oak, 0, 10.18, UF + 0.95, 4.4, 10.24, UF + 1.0);
   slats(gUpper, MU.oak, 2.75, 5.65, 5.425, UF, RZ);
   wall(gUpper, MU, 4.4, 10.2, 4.4, 13.4, UF, 1.0, [], MU.glass, 0.03); box(gUpper, MU.oak, 4.37, 10.2, UF + 0.95, 4.43, 13.4, UF + 1.0);
-  box(gUpper, MU.linen, 0.15, 5.65, UF, 1.55, 7.65, UF + 0.5); box(gUpper, MU.linen, 6.5, 5.65, UF, 7.9, 7.65, UF + 0.5);
-  box(gUpper, MU.oak, 0.15, 13.6, UF, 2.15, 15.6, UF + 0.3); box(gUpper, MU.linen, 0.2, 13.65, UF + 0.3, 2.1, 15.55, UF + 0.5); box(gUpper, MU.linen, 4.9, 11.7, UF, 6.6, 12.5, UF + 0.75);
+  box(gUpper, MU.linen, 0.15, 6.9, UF, 1.55, 8.85, UF + 0.5); box(gUpper, MU.linen, 6.5, 6.9, UF, 7.9, 8.85, UF + 0.5);
+  // front balconies: framed boxes 1.2 m deep (white frame, oak-lined), angled oak pivot fins on the outer side,
+  // a planter with tropical plants along the front and a frameless glass rail to +1.10; AC ledge between them behind oak slats
+  box(gUpper, MU.slab, 0, 4.3, UF - SL, 8.075, 5.43, UF - 0.02);
+  box(gUpper, MU.oakFloor, 0.15, 4.3, UF - 0.02, 3.15, 5.43, UF); box(gUpper, MU.oakFloor, 5.45, 4.3, UF - 0.02, 7.925, 5.43, UF);
+  const finGeo = new THREE.BoxGeometry(0.15, RZ - UF - 0.02, 0.035);
+  const leafMat = new THREE.MeshStandardMaterial({ color: '#4f7d45', roughness: 0.85, side: THREE.DoubleSide }); leafMat.userData.base = 1;
+  const leafGeo = new THREE.SphereGeometry(0.2, 8, 6);
+  [{ a: 0, b: 3.3, fins: [0.3, 1.75], pl: [1.88, 3.12] }, { a: 5.3, b: 8.075, fins: [6.75, 7.85], pl: [5.48, 6.62] }].forEach(({ a, b, fins, pl }, k) => {
+    // white frame: sides, top, thick bottom edge
+    box(gUpper, MU.wall, a, 4.3, UF - 0.35, a + 0.15, 5.43, RZ + 0.2); box(gUpper, MU.wall, b - 0.15, 4.3, UF - 0.35, b, 5.43, RZ + 0.2);
+    box(gUpper, MU.wall, a, 4.3, RZ, b, 5.43, RZ + 0.2); box(gUpper, MU.wall, a, 4.3, UF - 0.35, b, 4.45, UF - 0.02);
+    // oak lining inside the box
+    box(gUpper, MU.oak, a + 0.15, 4.3, RZ - 0.03, b - 0.15, 5.4, RZ, false);
+    box(gUpper, MU.oak, a + 0.15, 4.3, UF, a + 0.17, 5.4, RZ, false); box(gUpper, MU.oak, b - 0.17, 4.3, UF, b - 0.15, 5.4, RZ, false);
+    // pivot fins, each turned a little differently
+    const n = Math.round((fins[1] - fins[0]) / 0.26);
+    for (let i = 0; i <= n; i++) {
+      const x = fins[0] + (fins[1] - fins[0]) * i / n, ang = (k ? -1 : 1) * (0.2 + 0.45 * Math.abs(Math.sin(i * 1.3 + 0.4)));
+      const f = new THREE.Mesh(finGeo, MU.oak); f.position.copy(V(x, 4.42, (UF + RZ) / 2)); f.rotation.y = ang;
+      f.castShadow = true; f.receiveShadow = true; gUpper.add(f);
+      box(gUpper, MU.steel, x - 0.012, 4.41, RZ - 0.04, x + 0.012, 4.43, RZ, false);
+    }
+    // planter + plants, frameless glass rail behind it
+    box(gUpper, MU.stone, pl[0], 4.3, UF, pl[1], 4.72, UF + 0.45);
+    for (let x = pl[0] + 0.12; x < pl[1] - 0.05; x += 0.2) {
+      const m = new THREE.Mesh(leafGeo, leafMat), s = 0.8 + Math.abs(Math.sin(x * 9.1)) * 0.7;
+      m.scale.set(s * 1.3, s * 0.7, s); m.position.copy(V(x, 4.5 + Math.sin(x * 5) * 0.08, UF + 0.5 + s * 0.08)); m.rotation.y = x * 3; m.castShadow = true; gUpper.add(m);
+    }
+    box(gUpper, MU.glass, pl[0], 4.73, UF + 0.45, pl[1], 4.75, UF + 1.1, false);
+  });
+  slats(gUpper, MU.oak, 3.32, 5.28, 4.42, UF, UF + 1.6);
+
+  box(gUpper, MU.oak, 0.15, 13.6, UF, 2.15, 15.6, UF + 0.3); box(gUpper, MU.linen, 0.2, 13.65, UF + 0.3, 2.1, 15.55, UF + 0.5); box(gUpper, MU.linen, 4.9, 11.7, UF, 6.6, 12.5, UF + 0.75); box(gUpper, MU.car, 4.47, 14.45, UF + 1.0, 4.53, 15.4, UF + 1.6);
 
   // ---------- roof ----------
   box(gRoof, MR.slab, 0, 5.5, RZ, 8.0, 15.8, RZ + SL); box(gRoof, MR.slab, 0, 15.8, RZ, 4.6, D, RZ + SL);
@@ -536,7 +660,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   const LGF = [['Carport', 2.8, 2.8], ['Foyer', 6.8, 4.0], ['Kamar tamu', 1.6, 8.2], ['WC', 5.95, 6.25], ['Ruang keluarga', 2.2, 11.3],
     ['Makan', 6.2, 9.9], ['Dapur', 6.0, 12.6], ['Kamar ART', 1.1, 14.7], ['Tempat wudu', 3.7, 14.6], ['Mushalla', 5.4, 15.2],
     ['Teras belakang', 7.2, 14.6], ['Laundry', 2.5, 16.8], ['Taman', 7.0, 17.2], ['Lorong', 8.5, 8.0]].map(([t, x, y]) => label(t, gGround, x, y, 1.6));
-  const LUF = [['Kamar anak 1', 1.65, 7.6], ['Kamar anak 2', 6.65, 7.6], ['Void', 2.2, 11.8], ['KM anak', 7.1, 10.2], ['Ruang keluarga', 6.2, 12.5],
+  const LUF = [['Kamar anak 1', 1.65, 7.6], ['Kamar anak 2', 6.65, 7.6], ['Balkon', 1.65, 4.9], ['Balkon', 6.65, 4.9], ['Void', 2.2, 11.8], ['KM anak', 7.1, 10.2], ['Ruang keluarga', 6.2, 12.5],
     ['Kamar utama', 2.3, 16.3], ['Walk-in closet', 6.3, 14.0], ['KM utama', 6.3, 15.2]].map(([t, x, y]) => label(t, gUpper, x, y, UF + 1.6));
 
   // ---------- EXISTING HOUSE (from the confirmed existing plans) ----------
@@ -624,7 +748,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   });
 
   // ---------- ANALYSIS OVERLAYS: zoning, circulation, privacy ----------
-  const ANA = {"zones":{"pub":["#e2a546","Publik / penerimaan"],"fam":["#5f9fc4","Keluarga / bersama"],"priv":["#8b76bd","Privat / istirahat"],"svc":["#a39a52","Servis"],"wor":["#c8673f","Ibadah"],"circ":["#a8a39a","Sirkulasi"],"open":["#72ad60","Terbuka ke langit / void"]},"zoneRects":{"gf":[["pub",0,0,5.6,5.5],["pub",5.6,0,8.0,2.5],["pub",5.6,2.5,8.0,5.5],["pub",5.3,5.5,6.6,7.0],["circ",6.6,5.5,8.0,7.0],["circ",5.3,7.0,8.0,9.0],["circ",3.3,5.5,5.3,9.0],["priv",0,5.5,3.3,9.0],["fam",0,9.0,8.0,13.4],["fam",6.4,13.4,8.0,15.8],["wor",3.0,13.4,4.4,15.8],["wor",4.4,13.4,6.4,15.8],["svc",0,13.4,3.0,15.8],["svc",0,15.8,5.0,17.8],["svc",8.0,0,9.0,15.8],["open",5.0,15.8,9.0,17.8]],"uf":[["priv",0,5.5,3.3,9.0],["priv",5.3,5.5,8.0,9.0],["priv",6.2,9.0,8.0,11.4],["priv",0,13.4,4.6,17.8],["priv",4.6,13.4,8.0,14.6],["priv",4.6,14.6,8.0,15.8],["circ",3.3,5.5,5.3,9.0],["circ",0,9.0,6.2,10.2],["circ",4.4,10.2,6.2,11.4],["fam",4.4,11.4,8.0,13.4],["open",0,10.2,4.4,13.4],["open",4.6,15.8,9.0,17.8],["open",8.0,5.5,9.0,15.8]]},"flows":{"res":["#2f6fb0","Penghuni"],"gst":["#d08a12","Tamu"],"svc":["#7a5aa6","Servis / ART"],"wor":["#c0392b","Wudu → salat"]},"flowPaths":{"gf":[["res",[[6.9,-0.6],[6.9,2.4],[7.3,4.6],[7.3,6.4],[6.6,8.4],[5.6,9.4],[4.8,9.25]]],["res",[[6.6,8.4],[5.0,10.6],[2.4,11.4]]],["gst",[[6.6,-0.6],[6.6,2.4],[6.9,4.6],[7.05,6.1],[6.75,6.1]]],["gst",[[7.05,6.1],[6.9,8.0],[4.6,9.6],[2.7,9.2],[2.0,8.1]]],["svc",[[8.5,-0.6],[8.5,14.6],[7.2,14.6],[6.95,13.5],[6.6,12.6]]],["svc",[[8.5,14.6],[8.5,16.8],[5.6,16.75],[3.2,16.75],[1.5,16.4],[1.5,15.0]]],["wor",[[2.6,11.9],[3.7,12.9],[3.7,14.6]]],["wor",[[3.7,14.6],[3.85,13.1],[5.35,13.1],[5.35,14.6]]]],"uf":[["res",[[3.8,9.15],[3.2,9.6],[2.7,9.1],[2.0,8.0]]],["res",[[3.8,9.15],[5.4,9.6],[5.75,9.1],[6.6,8.0]]],["res",[[5.4,9.6],[5.6,10.8],[6.25,10.8],[7.1,10.4]]],["res",[[5.6,10.8],[5.6,12.4],[6.0,13.3],[6.0,14.0],[4.7,13.95],[2.4,14.9]]],["res",[[6.0,14.0],[5.4,14.5],[5.4,15.2]]]]},"stair":[[4.8,9.25,0.25],[4.8,6.6,1.95],[4.3,6.0,1.95],[3.8,6.6,1.95],[3.8,9.15,3.65]],"priv":{"1":["#f0c76a","Publik"],"2":["#9fcbb4","Semi-publik (tamu)"],"3":["#6aa0c0","Semi-privat (keluarga, servis)"],"4":["#4b5a8c","Privat"]},"privRects":{"gf":[[1,0,0,5.6,5.5],[1,5.6,0,8.0,2.5],[1,5.6,2.5,8.0,5.5],[2,5.3,5.5,6.6,7.0],[2,6.6,5.5,8.0,7.0],[2,5.3,7.0,8.0,9.0],[2,0,9.0,4.4,13.4],[2,4.4,9.0,8.0,11.4],[3,3.3,5.5,5.3,9.0],[3,4.4,11.4,8.0,13.4],[3,3.0,13.4,6.4,15.8],[3,6.4,13.4,8.0,15.8],[3,0,15.8,5.0,17.8],[3,8.0,0,9.0,15.8],[3,5.0,15.8,9.0,17.8],[4,0,5.5,3.3,9.0],[4,0,13.4,3.0,15.8]],"uf":[[3,3.3,5.5,5.3,9.0],[3,0,9.0,6.2,10.2],[3,4.4,10.2,6.2,11.4],[3,4.4,11.4,8.0,13.4],[4,0,5.5,3.3,9.0],[4,5.3,5.5,8.0,9.0],[4,6.2,9.0,8.0,11.4],[4,0,13.4,4.6,17.8],[4,4.6,13.4,8.0,15.8]]},"buffers":{"gf":[[3.3,5.5,5.3,9.0],[5.3,5.5,6.6,7.0]],"uf":[[3.3,5.5,5.3,9.0],[4.6,13.4,8.0,14.6],[6.2,9.0,8.0,11.4]]},"noise":{"gf":[[2.8,0.9,"Jalan & mobil"],[4.2,11.0,"TV"],[7.6,12.1,"Dapur"],[0.6,17.35,"Mesin cuci"]],"uf":[[4.5,1.5,"Hujan di kanopi"],[1.2,10.7,"Suara R. keluarga lewat void"]]},"sight":{"line":[6.9,2.6,6.9,10.3],"screen":[6.3,8.85,7.95,8.85]},"overlook":[[8.0,7.3],[8.0,12.4]],"legend":{"zone":"<ul class=\"chips\"><li><i style=\"background:#e2a546\"></i>Publik / penerimaan</li><li><i style=\"background:#5f9fc4\"></i>Keluarga / bersama</li><li><i style=\"background:#8b76bd\"></i>Privat / istirahat</li><li><i style=\"background:#a39a52\"></i>Servis</li><li><i style=\"background:#c8673f\"></i>Ibadah</li><li><i style=\"background:#a8a39a\"></i>Sirkulasi</li><li><i style=\"background:#72ad60\"></i>Terbuka ke langit / void</li></ul>","circ":"<ul class=\"chips\"><li><i style=\"background:#2f6fb0\"></i>Penghuni</li><li><i style=\"background:#d08a12\"></i>Tamu</li><li><i style=\"background:#7a5aa6\"></i>Servis / ART</li><li><i style=\"background:#c0392b\"></i>Wudu → salat</li></ul>","priv":"<ul class=\"chips\"><li><i style=\"background:#f0c76a\"></i>Publik</li><li><i style=\"background:#9fcbb4\"></i>Semi-publik (tamu)</li><li><i style=\"background:#6aa0c0\"></i>Semi-privat (keluarga, servis)</li><li><i style=\"background:#4b5a8c\"></i>Privat</li><li><i style=\"background:#c0392b\"></i>Sumber bising</li><li><i style=\"background:#8b7fc0\"></i>Penyangga akustik</li></ul>"}};
+  const ANA = {"zones":{"pub":["#e2a546","Publik / penerimaan"],"fam":["#5f9fc4","Keluarga / bersama"],"priv":["#8b76bd","Privat / istirahat"],"svc":["#a39a52","Servis"],"wor":["#c8673f","Ibadah"],"circ":["#a8a39a","Sirkulasi"],"open":["#72ad60","Terbuka ke langit / void"]},"zoneRects":{"gf":[["pub",0,0,5.6,5.5],["pub",5.6,0,8.0,2.5],["pub",5.6,2.5,8.0,5.5],["pub",5.3,5.5,6.6,7.0],["circ",6.6,5.5,8.0,7.0],["circ",5.3,7.0,8.0,9.0],["circ",3.3,5.5,5.3,9.0],["priv",0,5.5,3.3,9.0],["fam",0,9.0,8.0,13.4],["fam",6.4,13.4,8.0,15.8],["wor",3.0,13.4,4.4,15.8],["wor",4.4,13.4,6.4,15.8],["svc",0,13.4,3.0,15.8],["svc",0,15.8,5.0,17.8],["svc",8.0,0,9.0,15.8],["open",5.0,15.8,9.0,17.8]],"uf":[["priv",0,4.3,3.3,5.5],["priv",5.3,4.3,8.0,5.5],["priv",0,5.5,3.3,9.0],["priv",5.3,5.5,8.0,9.0],["priv",6.2,9.0,8.0,11.4],["priv",0,13.4,4.6,17.8],["priv",4.6,13.4,8.0,14.6],["priv",4.6,14.6,8.0,15.8],["circ",3.3,5.5,5.3,9.0],["circ",0,9.0,6.2,10.2],["circ",4.4,10.2,6.2,11.4],["fam",4.4,11.4,8.0,13.4],["open",0,10.2,4.4,13.4],["open",4.6,15.8,9.0,17.8],["open",8.0,5.5,9.0,15.8]]},"flows":{"res":["#2f6fb0","Penghuni"],"gst":["#d08a12","Tamu"],"svc":["#7a5aa6","Servis / ART"],"wor":["#c0392b","Wudu → salat"]},"flowPaths":{"gf":[["res",[[6.55,-0.6],[6.55,0.6],[6.9,2.4],[7.3,4.6],[7.3,6.4],[6.6,8.4],[5.6,9.4],[4.8,9.25]]],["res",[[6.6,8.4],[5.0,10.6],[2.4,11.4]]],["res",[[4.1,5.25],[5.8,4.3],[7.25,4.9]]],["gst",[[6.3,-0.6],[6.3,0.6],[6.6,2.4],[6.9,4.6],[7.05,6.1],[6.75,6.1]]],["gst",[[7.05,6.1],[6.9,8.0],[4.6,9.6],[2.7,9.2],[2.0,8.1]]],["svc",[[6.1,-0.6],[6.1,0.35],[8.5,1.1],[8.5,14.6],[7.2,14.6],[6.95,13.5],[6.6,12.6]]],["svc",[[8.5,14.6],[8.5,16.8],[5.6,16.75],[3.2,16.75],[1.5,16.4],[1.5,15.0]]],["wor",[[2.6,11.9],[3.7,12.9],[3.7,14.6]]],["wor",[[3.7,14.6],[3.85,13.1],[5.35,13.1],[5.35,14.6]]]],"uf":[["res",[[3.8,9.15],[3.2,9.6],[2.7,9.1],[2.0,8.0]]],["res",[[3.8,9.15],[5.4,9.6],[5.75,9.1],[6.6,8.0]]],["res",[[5.4,9.6],[5.6,10.8],[6.25,10.8],[7.1,10.4]]],["res",[[5.6,10.8],[5.6,12.4],[6.0,13.3],[6.0,14.0],[4.7,13.95],[2.4,14.9]]],["res",[[6.0,14.0],[5.4,14.5],[5.4,15.2]]]]},"stair":[[4.8,9.25,0.25],[4.8,6.6,1.95],[4.3,6.0,1.95],[3.8,6.6,1.95],[3.8,9.15,3.65]],"priv":{"1":["#f0c76a","Publik"],"2":["#9fcbb4","Semi-publik (tamu)"],"3":["#6aa0c0","Semi-privat (keluarga, servis)"],"4":["#4b5a8c","Privat"]},"privRects":{"gf":[[1,0,0,5.6,5.5],[1,5.6,0,8.0,2.5],[1,5.6,2.5,8.0,5.5],[2,5.3,5.5,6.6,7.0],[2,6.6,5.5,8.0,7.0],[2,5.3,7.0,8.0,9.0],[2,0,9.0,4.4,13.4],[2,4.4,9.0,8.0,11.4],[3,3.3,5.5,5.3,9.0],[3,4.4,11.4,8.0,13.4],[3,3.0,13.4,6.4,15.8],[3,6.4,13.4,8.0,15.8],[3,0,15.8,5.0,17.8],[3,8.0,0,9.0,15.8],[3,5.0,15.8,9.0,17.8],[4,0,5.5,3.3,9.0],[4,0,13.4,3.0,15.8]],"uf":[[3,0,4.3,3.3,5.5],[3,5.3,4.3,8.0,5.5],[3,3.3,5.5,5.3,9.0],[3,0,9.0,6.2,10.2],[3,4.4,10.2,6.2,11.4],[3,4.4,11.4,8.0,13.4],[4,0,5.5,3.3,9.0],[4,5.3,5.5,8.0,9.0],[4,6.2,9.0,8.0,11.4],[4,0,13.4,4.6,17.8],[4,4.6,13.4,8.0,15.8]]},"buffers":{"gf":[[3.3,5.5,5.3,9.0],[5.3,5.5,6.6,7.0]],"uf":[[3.3,5.5,5.3,9.0],[4.6,13.4,8.0,14.6],[6.2,9.0,8.0,11.4]]},"noise":{"gf":[[2.8,0.9,"Jalan & mobil"],[1.65,12.95,"TV"],[7.6,12.1,"Dapur"],[0.6,17.35,"Mesin cuci"]],"uf":[[4.5,1.5,"Hujan di kanopi"],[1.2,10.7,"Suara R. keluarga lewat void"]]},"sight":{"line":[6.9,2.6,6.9,10.3],"screen":[6.3,8.85,7.95,8.85]},"overlook":[[8.0,7.3],[8.0,12.4]],"legend":{"zone":"<ul class=\"chips\"><li><i style=\"background:#e2a546\"></i>Publik / penerimaan</li><li><i style=\"background:#5f9fc4\"></i>Keluarga / bersama</li><li><i style=\"background:#8b76bd\"></i>Privat / istirahat</li><li><i style=\"background:#a39a52\"></i>Servis</li><li><i style=\"background:#c8673f\"></i>Ibadah</li><li><i style=\"background:#a8a39a\"></i>Sirkulasi</li><li><i style=\"background:#72ad60\"></i>Terbuka ke langit / void</li></ul>","circ":"<ul class=\"chips\"><li><i style=\"background:#2f6fb0\"></i>Penghuni</li><li><i style=\"background:#d08a12\"></i>Tamu</li><li><i style=\"background:#7a5aa6\"></i>Servis / ART</li><li><i style=\"background:#c0392b\"></i>Wudu → salat</li></ul>","priv":"<ul class=\"chips\"><li><i style=\"background:#f0c76a\"></i>Publik</li><li><i style=\"background:#9fcbb4\"></i>Semi-publik (tamu)</li><li><i style=\"background:#6aa0c0\"></i>Semi-privat (keluarga, servis)</li><li><i style=\"background:#4b5a8c\"></i>Privat</li><li><i style=\"background:#c0392b\"></i>Sumber bising</li><li><i style=\"background:#8b7fc0\"></i>Penyangga akustik</li></ul>"}};
   const ovItems = [], circFlows = [], pulses = [], noiseLabels = [];
   function ovMat(color, kind, base, floor) {
     const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
@@ -674,6 +798,63 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   ANA.flowPaths.uf.forEach(([k, pts]) => flowPath(pts.map(([x, y]) => [x, y, UF + 0.3]), ANA.flows[k][0], ovU, 'uf'));
   flowPath(ANA.stair, ANA.flows.res[0], ovG, 'gf');
 
+  // ---------- BUILDING SERVICES (MEP): AC, water, hot water, network ----------
+  const MEP = {"idu":[["uf",0.08,14.2,0.3,15.0,"AC 1 PK",false],["uf",0.6,8.7,1.4,8.92,"AC ¾ PK",false],["uf",6.8,8.7,7.6,8.92,"AC ½ PK",false],["gf",0.5,8.7,1.3,8.92,"AC ¾ PK",false],["gf",0.3,13.48,1.1,13.7,"AC ½ PK",true]],"odu":[["uf",3.2,16.75,4.1,17.35,"ODU utama · dak atap",false],["uf",3.4,4.95,4.2,5.38,"ODU 1",false],["uf",4.4,4.95,5.2,5.38,"ODU 2",false],["gf",2.55,5.05,3.25,5.42,"ODU tamu · t 2.4 m",false],["gf",5.08,16.0,5.48,16.8,"ODU ART (ops.)",true]],"refrig":[["uf",[[0.3,14.6],[0.6,14.6],[0.6,16.5],[3.65,16.5],[3.65,16.75]],false],["uf",[[1.0,8.7],[1.0,8.55],[3.05,8.55],[3.05,5.2],[3.4,5.2]],false],["uf",[[7.2,8.7],[7.2,8.55],[5.5,8.55],[5.5,5.2],[5.2,5.2]],false],["gf",[[0.9,8.7],[0.9,8.55],[2.9,8.55],[2.9,5.42]],false],["gf",[[0.7,13.7],[0.7,16.1],[5.08,16.1]],true]],"cold":{"gf":[[[0.35,0.15],[0.35,0.5]],[[1.3,1.6],[0.35,1.8]],[[0.35,2.25],[0.35,5.3],[8.25,5.3],[8.25,16.05],[5.0,16.05],[0.7,16.9]],[[6.3,5.3],[6.3,6.3]],[[8.25,11.9],[6.9,11.9]],[[8.25,13.55],[3.25,13.55],[3.25,15.3],[2.6,15.3]],[[8.25,10.6],[8.15,10.6]]],"uf":[[[8.15,10.6],[7.4,10.6]],[[7.9,10.6],[7.9,15.25],[5.0,15.25]],[[8.15,10.6],[8.15,10.2],[7.6,10.2]]]},"hot":{"gf":[[[7.9,11.3],[7.9,6.8],[6.45,6.8]]],"uf":[[[7.75,11.25],[7.75,10.35],[7.3,10.35]],[[7.75,11.25],[7.75,15.05],[5.1,15.05]]]},"risers":[[8.15,10.6],[7.9,11.3]],"tank":[0.3,0.45,2.4,1.6],"septic":[5.8,0.35,6.9,1.45],"pump":[0.33,2.02],"solar":[6.3,9.6,8.4,12.0],"tvs":[["gf",0.95,13.27,2.35,13.33],["uf",4.48,14.45,4.54,15.4]],"nodes":[["gf",6.95,8.35,"A"],["uf",5.0,11.9,"B"],["gf",6.3,13.2,"C"]],"niche":[5.45,8.25],"cat6":{"gf":[[1.65,13.2,"TV"],[6.3,13.2,"Node C"],[5.75,2.6,"CCTV"],[8.05,3.0,"CCTV"]],"uf":[[5.0,11.9,"Node B"],[4.45,14.9,"TV"],[2.9,8.75,"Desk"],[5.55,8.75,"Desk"]]},"netRiser":[5.38,8.25],"wifiR":6.0,"labels":{"tank":"Tandon bawah 2.000 L","septic":"Septic biofil","solar":"Pemanas surya 150 L (di atap)","pump":"Pompa","fridge":"Kulkas","washer":"Mesin cuci","tv":"TV","panel":"Panel + ONT","node":"Wi-Fi"},"legend":"<ul class=\"chips\"><li><i style=\"background:#1c6fd1\"></i>Air bersih dingin</li><li><i style=\"background:#d63c2f\"></i>Air panas</li><li><i style=\"background:#0b7285\"></i>Pipa refrigeran</li><li><i style=\"background:#7a3fb5\"></i>Kabel data Cat6</li><li><i style=\"background:#ffffff\"></i>AC unit dalam</li><li><i style=\"background:#9aa5ad\"></i>AC unit luar</li><li><i style=\"background:#7a3fb555\"></i>Node Wi-Fi mesh</li></ul>"};
+  const mepG = new THREE.Group(), mepU = new THREE.Group(); gGround.add(mepG); gUpper.add(mepU);
+  const mepLabels = [];
+  const MG_ = { gf: mepG, uf: mepU };
+  const mm = (c, b, fl) => ovMat(c, 'mep', b, fl);
+  const mLabel = (t, fl, x, y, z) => mepLabels.push({ s: label(t, MG_[fl], x, y, z), floor: fl });
+  function tube(fl, pts3, color, r) {
+    const P3 = pts3.map(p => V(p[0], p[1], p[2])), path = new THREE.CurvePath();
+    for (let i = 0; i < P3.length - 1; i++) path.add(new THREE.LineCurve3(P3[i], P3[i + 1]));
+    MG_[fl].add(new THREE.Mesh(new THREE.TubeGeometry(path, Math.max(8, P3.length * 16), r, 6, false), mm(color, 1, fl)));
+  }
+  const base = fl => fl === 'gf' ? 0 : UF;
+  // AC indoor units, outdoor units, refrigerant pipes, ledge
+  MEP.idu.forEach(([fl, x0, y0, x1, y1, lab, opt]) => { const z = base(fl);
+    box(MG_[fl], mm('#ffffff', opt ? 0.6 : 1, fl), x0, y0, z + 2.45, x1, y1, z + 2.75); mLabel(lab, fl, (x0 + x1) / 2, (y0 + y1) / 2, z + 3.05); });
+  MEP.odu.forEach(([fl, x0, y0, x1, y1, lab, opt]) => {
+    const z = fl === 'gf' ? 2.2 : (y0 > 16 ? RZ + SL : UF + 0.05);
+    box(MG_[fl], mm('#9aa5ad', opt ? 0.6 : 1, fl), x0, y0, z, x1, y1, z + 0.55); });
+  box(mepU, mm('#bfc2bc', 1, 'uf'), 3.3, 4.85, UF - 0.12, 5.3, 5.5, UF + 0.03);
+  MEP.refrig.forEach(([fl, pts, opt]) => { const zc = base(fl) + 2.85;
+    const p3 = pts.map(([x, y]) => [x, y, zc]); const [lx, ly] = pts[pts.length - 1];
+    const roof = fl === 'uf' && ly > 16; p3.push([lx, ly, fl === 'gf' ? 2.5 : (roof ? RZ + SL + 0.3 : UF + 0.35)]);
+    if (roof) p3.splice(p3.length - 1, 0, [lx, ly, zc]);
+    tube(fl, p3, '#0b7285', 0.04); });
+  // cold / hot water, risers, solar heater, tanks
+  for (const fl of ['gf', 'uf']) { const z = base(fl) + 0.18;
+    MEP.cold[fl].forEach(pts => tube(fl, pts.map(([x, y]) => [x, y, z]), '#1c6fd1', 0.045));
+    MEP.hot[fl].forEach(pts => tube(fl, pts.map(([x, y]) => [x, y, z + 0.1]), '#d63c2f', 0.045)); }
+  tube('gf', [[8.15, 10.6, 0.18], [8.15, 10.6, RZ + SL + 0.5]], '#1c6fd1', 0.05);
+  tube('gf', [[7.85, 11.28, RZ + SL + 0.5], [7.85, 11.28, 0.28]], '#d63c2f', 0.05);
+  { const [sx0, sy0, sx1, sy1] = MEP.solar, zz = RZ + SL + 0.75;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, sy1 - sy0 - 0.2), mm('#1f3f66', 1, 'uf'));
+    panel.position.copy(V(7.55, (sy0 + sy1) / 2, zz)); panel.rotation.z = THREE.MathUtils.degToRad(-30); mepU.add(panel);
+    const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, sy1 - sy0 - 0.3, 18), mm('#e9ecef', 1, 'uf'));
+    tank.rotation.x = Math.PI / 2; tank.position.copy(V(6.85, (sy0 + sy1) / 2, zz + 0.45)); mepU.add(tank);
+    mLabel(MEP.labels.solar, 'uf', 7.0, (sy0 + sy1) / 2, zz + 1.2); }
+  { const [x0, y0, x1, y1] = MEP.tank; box(mepG, mm('#4d8fe0', 0.85, 'gf'), x0, y0, 0.0, x1, y1, 0.07); mLabel(MEP.labels.tank, 'gf', (x0 + x1) / 2, (y0 + y1) / 2, 0.6); }
+  { const [x0, y0, x1, y1] = MEP.septic; box(mepG, mm('#8a5a3c', 0.85, 'gf'), x0, y0, 0.0, x1, y1, 0.07); mLabel(MEP.labels.septic, 'gf', (x0 + x1) / 2, (y0 + y1) / 2, 0.6); }
+  box(mepG, mm('#5e666c', 1, 'gf'), MEP.pump[0] - 0.2, MEP.pump[1] - 0.22, 0, MEP.pump[0] + 0.22, MEP.pump[1] + 0.22, 0.45); mLabel(MEP.labels.pump, 'gf', MEP.pump[0] + 0.3, MEP.pump[1], 0.95);
+  mLabel(MEP.labels.fridge, 'gf', 7.6, 12.95, 2.2); mLabel(MEP.labels.washer, 'gf', 0.62, 17.37, 1.35);
+  box(mepG, mm('#1d2228', 1, 'gf'), 5.36, 7.3, 1.1, 5.46, 8.5, 1.9); mLabel(MEP.labels.panel, 'gf', 5.6, 7.9, 2.25);
+  // network: Cat6 runs, risers, mesh nodes + coverage discs
+  const NZ = { gf: 2.9, uf: UF + 2.9 };
+  tube('gf', [[MEP.netRiser[0], MEP.netRiser[1], 1.5], [MEP.netRiser[0], MEP.netRiser[1], UF + 2.9]], '#7a3fb5', 0.035);
+  for (const fl of ['gf', 'uf']) {
+    const [sx, sy] = fl === 'gf' ? MEP.niche : MEP.netRiser;
+    MEP.cat6[fl].forEach(([x, y]) => tube(fl, [[sx, sy, NZ[fl]], [x, y, NZ[fl]], [x, y, base(fl) + 1.0]], '#7a3fb5', 0.03));
+  }
+  MEP.nodes.forEach(([fl, x, y, lab]) => { const z = base(fl) + 2.1;
+    const n = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.2, 16), mm('#ffffff', 1, fl)); n.position.copy(V(x, y, z)); MG_[fl].add(n);
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(MEP.wifiR, 48), mm('#7a3fb5', 0.13, fl));
+    disc.rotation.x = -Math.PI / 2; disc.position.copy(V(x, y, base(fl) + 0.11)); MG_[fl].add(disc);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.025, 8, 40), mm('#7a3fb5', 0.9, fl)); ring.rotation.x = Math.PI / 2;
+    ring.position.copy(V(x, y, z)); MG_[fl].add(ring); pulses.push(ring);
+    mLabel('Wi-Fi ' + lab, fl, x, y, z + 0.6); });
+
   // ---------- camera keyframes (plan coords) ----------
   const K = [
     { p: [19, -13, 12], t: [4.5, 8.5, 3.0] },
@@ -685,6 +866,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     { p: [12.5, -4.5, 20.5], t: [4.3, 9.6, 0] },
     { p: [-5.5, -3.5, 19.5], t: [4.6, 9.4, 0] },
     { p: [14, 23.5, 18.5], t: [4.3, 9.2, 0] },
+    { p: [17, -9, 17.5], t: [4.4, 9.8, 2.6] },
     { p: [6.4, 22.5, 6.2], t: [5.7, 15.0, 0.8] },
     { p: [-5, 31, 9.5], t: [3.5, 15, 4.6] },
     { p: [21, -15, 14], t: [4.5, 8.9, 3.0] },
@@ -692,7 +874,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   ];
   const vp = a => V(a[0], a[1], a[2]);
   const cam = vp(K[0].p).clone(), tgt = vp(K[0].t).clone();
-  const S = { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0 };
+  const S = { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0, mep: 0 };
 
   // ---------- scroll ----------
   gsap.registerPlugin(ScrollTrigger);
@@ -715,9 +897,10 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     .to(S, { zone: 1, air: 0 }, 5)
     .to(S, { zone: 0, circ: 1 }, 6)
     .to(S, { circ: 0, priv: 1 }, 7)
-    .to(S, { priv: 0, upper: 0, roof: 0, lGF: 0, air: 0, qibla: 1 }, 8)
-    .to(S, { qibla: 0 }, 9)
-    .to(S, { mix: 1 }, 11);
+    .to(S, { priv: 0, mep: 1, upper: 0, lGF: 0, lUF: 0 }, 8)
+    .to(S, { mep: 0, roof: 0, air: 0, qibla: 1 }, 9)
+    .to(S, { qibla: 0 }, 10)
+    .to(S, { mix: 1 }, 12);
 
   // step rail
   const sections = [...document.querySelectorAll('.step')];
@@ -731,10 +914,11 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
 
   // ---------- drag to orbit, explore mode ----------
   const orbit = { yaw: 0, pitch: 0, zoom: 1 };
+  const walk = { on: false, x: 0, y: 0, z: 0, yaw: 0, cur: null, busy: false };
   const cv = renderer.domElement, pts = new Map();
   let exploring = false, pinch0 = 0, zoom0 = 1;
   cv.addEventListener('pointerdown', e => {
-    if (!exploring && e.pointerType === 'touch') return;      // on phones the tour scrolls; drag only in explore mode
+    if (!exploring && !walk.on && e.pointerType === 'touch') return;      // on phones the tour scrolls; drag only in explore mode
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId); cv.classList.add('grabbing');
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); zoom0 = orbit.zoom; }
     gsap.killTweensOf(orbit);
@@ -749,12 +933,12 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   });
   const up = e => { pts.delete(e.pointerId); if (!pts.size) cv.classList.remove('grabbing'); };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
-  cv.addEventListener('wheel', e => { if (!exploring) return; e.preventDefault();
+  cv.addEventListener('wheel', e => { if (!exploring && !walk.on) return; e.preventDefault();
     orbit.zoom = THREE.MathUtils.clamp(orbit.zoom * (1 + e.deltaY * 0.0012), 0.35, 2.2); }, { passive: false });
   // in tour mode, scrolling eases any manual orbit back so each stop frames correctly
   let lastP = 0;
   ScrollTrigger.create({ trigger: '#story', start: 'top top', end: 'bottom bottom', onUpdate: self => {
-    if (!exploring && !pts.size && Math.abs(self.progress - lastP) > 0.002 && (orbit.yaw || orbit.pitch || orbit.zoom !== 1))
+    if (!exploring && !walk.on && !pts.size && Math.abs(self.progress - lastP) > 0.002 && (orbit.yaw || orbit.pitch || orbit.zoom !== 1))
       gsap.to(orbit, { yaw: 0, pitch: 0, zoom: 1, duration: 0.9, ease: 'power2.out' });
     lastP = self.progress; } });
 
@@ -766,11 +950,11 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
   const ovlBtns = [...document.querySelectorAll('[data-ovl]')], ovlLegend = document.getElementById('ovlLegend');
   let curView = 'house';
   function setOvl(v) {
-    gsap.to(S, { zone: +(v === 'zone'), circ: +(v === 'circ'), priv: +(v === 'priv'), duration: 0.6 });
+    gsap.to(S, { zone: +(v === 'zone'), circ: +(v === 'circ'), priv: +(v === 'priv'), mep: +(v === 'mep'), duration: 0.6 });
     ovlBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ovl === v)));
-    ovlLegend.hidden = v === 'none'; ovlLegend.innerHTML = v === 'none' ? '' : ANA.legend[v];
-    if (v !== 'none') { if (curView === 'house') setView('ground'); if (S.mix > 0.5) setHouse('reno');
-      const P1 = vp([12.5, -4.5, 21 + (curView === 'upper' ? 3.4 : 0)]), T1 = vp([4.3, 9.6, curView === 'upper' ? 3.4 : 0]);
+    ovlLegend.hidden = v === 'none'; ovlLegend.innerHTML = v === 'none' ? '' : (v === 'mep' ? MEP.legend : ANA.legend[v]);
+    if (v !== 'none') { if (v === 'mep') setView('upper'); else if (curView === 'house') setView('ground'); if (S.mix > 0.5) setHouse('reno');
+      const P1 = v === 'mep' ? vp([17, -9, 17.5]) : vp([12.5, -4.5, 21 + (curView === 'upper' ? 3.4 : 0)]), T1 = v === 'mep' ? vp([4.4, 9.8, 2.6]) : vp([4.3, 9.6, curView === 'upper' ? 3.4 : 0]);
       gsap.to(cam, { x: P1.x, y: P1.y, z: P1.z, duration: 1, ease: 'power2.inOut' }); gsap.to(tgt, { x: T1.x, y: T1.y, z: T1.z, duration: 1, ease: 'power2.inOut' });
       gsap.to(orbit, { yaw: 0, pitch: 0, zoom: 1, duration: 1 }); }
   }
@@ -796,13 +980,184 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     exploring = false; document.body.classList.remove('exploring'); tools.hidden = true; if (lenis) lenis.start();
     gsap.to(orbit, { yaw: 0, pitch: 0, zoom: 1, duration: 0.6 });
     const pr = tl.scrollTrigger ? tl.scrollTrigger.progress : 0;     // snap back to the current tour stop
-    gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0 });
+    gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0, mep: 0 });
     tl.progress(pr > 0.5 ? 0 : 1); tl.progress(pr);
     exploreBtn.focus();
   }
   exploreBtn.addEventListener('click', enterExplore);
   document.getElementById('exitBtn').addEventListener('click', exitExplore);
   window.addEventListener('keydown', e => { if (e.key === 'Escape' && exploring) exitExplore(); });
+
+
+  // ---------- walk inside: eye-level POV, drag to look 360°, tap the floor rings to move ----------
+  const WT = {"stops": [{"id": "street", "x": 4.9, "y": -4.2, "f": "gf", "yaw": 0.0, "name": "Jalan", "text": "Pagar mobil besi hitam, pintu orang kayu oak, dinding batu nama, dan roster putih di depan lorong. Ketuk pagar untuk membukanya, atau pintu untuk masuk."}, {"id": "carport", "x": 5.3, "y": 5.1, "f": "gf", "yaw": 2.6387, "name": "Carport", "text": "5.6 × 5.5 m untuk dua MPV di bawah kanopi baja hitam dengan plafon kisi motif oak. Anda berdiri di muka rumah, menghadap mobil dan pagar."}, {"id": "entry", "x": 6.45, "y": 0.85, "f": "gf", "yaw": -0.1974, "name": "Taman depan", "text": "Taman kecil dengan batu pijakan dari pintu orang ke pintu utama. Roster di kanan membiarkan angin masuk ke lorong."}, {"id": "foyer", "x": 6.9, "y": 3.3, "f": "gf", "yaw": 0.0997, "name": "Foyer", "text": "Teras beratap 2.4 × 3.0 m, terbuka ke carport, dengan bangku sepatu. Pintu utama di depan menuju hall."}, {"id": "hall", "x": 7.25, "y": 7.7, "f": "gf", "yaw": 1.4219, "name": "Hall", "text": "Tangga U, panel listrik dan niche jaringan, serta jalan menuju ruang keluarga dan ruang makan."}, {"id": "guest", "x": 2.45, "y": 8.35, "f": "gf", "yaw": 2.7611, "name": "Kamar tamu", "text": "3.3 × 3.5 m di bagian depan rumah, pintu 0.8 m dari hall dan AC sendiri."}, {"id": "living", "x": 2.05, "y": 10.3, "f": "gf", "yaw": 0.1194, "name": "Ruang keluarga", "text": "4.4 × 4.4 m di bawah void dua lantai. Anda di sofa L menghadap dinding TV: panel kisi oak dan kabinet TV gantung. Lihat ke atas untuk galeri atas."}, {"id": "dining", "x": 4.6, "y": 10.8, "f": "gf", "yaw": -1.1479, "name": "Makan + dapur", "text": "Dapur terbuka dengan island, kompor di bawah jendela, dan kulkas di sudut. Pintu geser 2.4 m terbuka ke lorong."}, {"id": "aisle", "x": 8.5, "y": 9.4, "f": "gf", "yaw": 0.0, "name": "Lorong utara", "text": "Lebar 1 m dan terbuka ke langit. Angin masuk lewat roster di jalan dan mengalir sampai taman belakang."}, {"id": "terrace", "x": 7.2, "y": 14.3, "f": "gf", "yaw": 0.3367, "name": "Teras belakang", "text": "Dek beratap di antara dapur, lorong, mushalla, dan taman."}, {"id": "mushalla", "x": 4.85, "y": 13.75, "f": "gf", "yaw": -0.4324, "name": "Mushalla", "text": "2.0 × 2.4 m untuk dua orang, menghadap kiblat (295°, panah di lantai), dengan pintu kaca ke taman belakang."}, {"id": "backyard", "x": 6.4, "y": 16.85, "f": "gf", "yaw": -2.8501, "name": "Taman belakang", "text": "Terbuka ke langit dengan satu pohon peneduh. Menoleh ke rumah: pintu kaca mushalla, laundry, dan jendela kamar utama di atas."}, {"id": "laundry", "x": 4.0, "y": 16.75, "f": "gf", "yaw": 1.4711, "name": "Laundry", "text": "5.0 × 2.0 m dengan mesin cuci, pengering, bak, dan meja servis. Pintunya terbuka ke taman belakang."}, {"id": "maid", "x": 1.65, "y": 14.0, "f": "gf", "yaw": 1.0304, "name": "Kamar ART", "text": "Tempat tidur, lemari, dan WC kecil, masuk dari laundry."}, {"id": "gallery", "x": 5.0, "y": 9.75, "f": "uf", "yaw": 1.068, "name": "Galeri atas", "text": "Tangga tiba di sini di samping void. Railing kaca di atas ruang keluarga; kamar anak di belakang Anda."}, {"id": "kid1", "x": 2.15, "y": 8.5, "f": "uf", "yaw": 2.9442, "name": "Kamar anak 1", "text": "3.3 × 3.5 m. Pintu geser kaca terbuka ke balkon 1.2 m sendiri."}, {"id": "bal1", "x": 2.45, "y": 5.05, "f": "uf", "yaw": 2.8501, "name": "Balkon 1", "text": "Boks berbingkai 3.3 × 1.2 m di atas kanopi carport: sirip kayu oak putar di kanan Anda, pot tanaman dan railing kaca di depan, pemandangan ke jalan. Unit luar AC tersembunyi di balik kisi oak di kiri."}, {"id": "kid2", "x": 6.15, "y": 8.45, "f": "uf", "yaw": -2.9442, "name": "Kamar anak 2", "text": "2.7 × 3.5 m dengan balkon di depan dan jendela samping ke lorong."}, {"id": "bal2", "x": 5.95, "y": 5.05, "f": "uf", "yaw": -2.8501, "name": "Balkon 2", "text": "Boks berbingkai 2.7 × 1.2 m di atas foyer: pot tanaman di depan, sirip kayu oak putar di kiri Anda."}, {"id": "family", "x": 6.45, "y": 13.05, "f": "uf", "yaw": 1.7682, "name": "Ruang keluarga atas", "text": "Sofa dan meja belajar di samping void, di antara kamar anak dan kamar utama."}, {"id": "master", "x": 3.3, "y": 14.15, "f": "uf", "yaw": 0.3367, "name": "Kamar utama", "text": "4.6 × 4.4 m di belakang yang tenang: jendela barat dengan sirip oak, walk-in closet dan KM dalam di belakang Anda."}], "up": "Naik ↑", "down": "Turun ↓", "opening_gate": "Membuka pagar…", "opening_door": "Membuka pintu orang…"};
+  const EYE = 1.6, PITCH = { bal1: -0.3, bal2: -0.3, carport: -0.06, living: 0.15, street: 0.04 };
+  const yawOf = (dx, dy) => Math.atan2(-dx, dy);                       // plan direction -> camera yaw
+  const STOPS = WT.stops.map(s => ({ ...s, fz: s.f === 'uf' ? UF : (s.id === 'street' ? -0.15 : 0) }));
+  const SID = Object.fromEntries(STOPS.map(s => [s.id, s]));
+  const walkLight = new THREE.PointLight('#fff3e2', 0, 13, 1.4); scene.add(walkLight);
+  const ringG = new THREE.Group(); ringG.visible = false; scene.add(ringG);
+  function tagSprite(text) {
+    const c = document.createElement('canvas'), ctx = c.getContext('2d'), fs = 40;
+    ctx.font = `600 ${fs}px "Instrument Sans", system-ui, sans-serif`;
+    const tw = Math.ceil(ctx.measureText(text).width) + 40; c.width = tw; c.height = 64;
+    ctx.font = `600 ${fs}px "Instrument Sans", system-ui, sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)'; const r = 32;
+    ctx.beginPath(); ctx.moveTo(r, 0); ctx.arcTo(tw, 0, tw, 64, r); ctx.arcTo(tw, 64, 0, 64, r); ctx.arcTo(0, 64, 0, 0, r); ctx.arcTo(0, 0, tw, 0, r); ctx.fill();
+    ctx.fillStyle = '#1d2124'; ctx.textBaseline = 'middle'; ctx.fillText(text, 20, 34);
+    const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: true }));
+    s.scale.set(tw / 64 * 0.22, 0.22, 1); return s;
+  }
+  const rings = [];
+  function addRing(id, x, y, f, text, act) {
+    const z = (f === 'uf' ? UF : (id === 'street' ? -0.15 : 0)) + 0.04, g = new THREE.Group();
+    const mat = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false });
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.34, 40), new THREE.MeshBasicMaterial({ color: '#2f6fb0', transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.27, 0.36, 40), mat);
+    [disc, ring].forEach(m => { m.rotation.x = -Math.PI / 2; g.add(m); });
+    const tag = tagSprite(text); tag.position.y = 0.95; g.add(tag);
+    g.position.copy(V(x, y, z)); g.userData = { id, f, act, ring }; ringG.add(g); rings.push(g);
+  }
+  STOPS.forEach(s => addRing(s.id, s.x, s.y, s.f, s.name, { go: s.id }));
+  addRing('up', 4.8, 9.4, 'gf', WT.up, { stair: 'up' }); addRing('down', 3.8, 9.55, 'uf', WT.down, { stair: 'down' });
+
+  const walkUI = document.getElementById('walkUI'), walkTitle = document.getElementById('walkTitle'), walkText = document.getElementById('walkText');
+  const walkBar = document.getElementById('walkBar'), dip = document.getElementById('dip');
+  STOPS.forEach(s => { const b = document.createElement('button'); b.type = 'button'; b.textContent = s.name; b.dataset.stop = s.id;
+    b.addEventListener('click', () => goTo(s.id)); walkBar.appendChild(b); });
+
+  function eyeOf(s) { return s.fz + EYE; }
+  function unwrap(target, from) { let t = target; while (t - from > Math.PI) t -= 2 * Math.PI; while (t - from < -Math.PI) t += 2 * Math.PI; return t; }
+  function setStop(s) {
+    walk.cur = s.id; walkTitle.textContent = s.name; walkText.textContent = s.text;
+    [...walkBar.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.stop === s.id)));
+    const cb = walkBar.querySelector(`[data-stop="${s.id}"]`); if (cb) cb.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    rings.forEach(g => g.visible = g.userData.f === s.f && g.userData.id !== s.id && !(s.id !== 'street' && g.userData.id === 'street' && false));
+    gsap.to(S, { qibla: s.id === 'mushalla' ? 1 : 0, duration: 0.6 });
+  }
+  const tw = (o, v, d, ease = 'power2.inOut') => new Promise(r => gsap.to(o, { ...v, duration: d, ease, onComplete: r }));
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const blockers = () => { const out = []; [site, gGround, gUpper, gRoof].forEach(g => g.traverse(m => { if (m.isMesh && m.visible && m.material && m.material.userData.base === 1) out.push(m); })); return out; };
+  const ray = new THREE.Raycaster();
+  function clearPath(a, b) {
+    const A = V(a.x, a.y, a.z), B = V(b.x, b.y, b.z), d = B.clone().sub(A), len = d.length();
+    ray.set(A, d.normalize()); ray.far = len; return ray.intersectObjects(blockers(), false).length === 0;
+  }
+  let gateOpen = false, doorOpen = false;
+  async function setGate(open) { if (gateOpen === open) return; gateOpen = open;
+    if (open) { await tw(gateR.position, { z: -0.12 }, 0.35); await tw(gateR.position, { x: -2.6 }, 1.6, 'power1.inOut'); }
+    else { await tw(gateR.position, { x: 0 }, 1.4, 'power1.inOut'); await tw(gateR.position, { z: 0 }, 0.3); } }
+  async function setDoor(open) { if (doorOpen === open) return; doorOpen = open; await tw(doorG.rotation, { y: open ? 1.45 : 0 }, 1.0); }
+  async function moveTo(s, opts = {}) {
+    const to = { x: s.x, y: s.y, z: eyeOf(s) }, from = { x: walk.x, y: walk.y, z: walk.z };
+    const yaw = unwrap(s.yaw, walk.yaw), dist = Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z);
+    gsap.to(orbit, { yaw: 0, pitch: (PITCH[s.id] || 0) / 0.8, zoom: 1, duration: 0.8 });
+    if (opts.glide || (dist < 9 && Math.abs(to.z - from.z) < 0.5 && clearPath(from, to))) {
+      const dir = Math.atan2(-(to.x - from.x), to.y - from.y), mid = dist > 1.2 ? unwrap(dir, walk.yaw) : yaw;
+      const dur = Math.max(0.9, dist * 0.45), t1 = Math.min(0.6, dur * 0.3);
+      await Promise.all([tw(walk, { x: to.x, y: to.y, z: to.z }, dur, 'power1.inOut'),
+        gsap.timeline().to(walk, { yaw: mid, duration: t1, ease: 'power1.out' }).to(walk, { yaw: unwrap(yaw, mid), duration: 0.9, ease: 'power1.inOut' }, Math.max(t1, dur - 0.6))]);
+    } else {
+      await tw(dip, { opacity: 1 }, 0.3, 'power1.in');
+      Object.assign(walk, to, { yaw }); await wait(60);
+      await tw(dip, { opacity: 0 }, 0.4, 'power1.out');
+    }
+  }
+  const STAIR = { up: [[4.8, 9.3, 1.6], [4.8, 6.75, 3.15], [4.3, 6.05, 3.3], [3.8, 6.75, 3.45], [3.8, 9.3, UF + EYE]],
+                  down: [[3.8, 9.3, UF + EYE], [3.8, 6.75, 3.45], [4.3, 6.05, 3.3], [4.8, 6.75, 3.15], [4.8, 9.3, 1.6]] };
+  async function climb(dir) {
+    const P = STAIR[dir], first = { x: P[0][0], y: P[0][1], fz: P[0][2] - EYE, yaw: yawOf(0, -1), f: dir === 'up' ? 'gf' : 'uf' };
+    if (Math.hypot(walk.x - first.x, walk.y - first.y) > 0.3) await moveTo(first);
+    let yaw = walk.yaw;
+    for (let i = 1; i < P.length; i++) {
+      const [x0, y0] = P[i - 1], [x1, y1, z1] = P[i];
+      yaw = unwrap(yawOf(x1 - x0, y1 - y0), yaw);
+      await Promise.all([tw(walk, { x: x1, y: y1, z: z1 }, 0.75, 'none'), tw(walk, { yaw }, 0.45, 'power1.out')]);
+    }
+  }
+  async function goTo(id) {
+    if (walk.busy || id === walk.cur) return; walk.busy = true;
+    try {
+      const s = SID[id], cur = SID[walk.cur];
+      if (cur && cur.f !== s.f && !(walk.cur === 'street') ) { await climb(s.f === 'uf' ? 'up' : 'down'); }
+      const inside = i => i !== 'street';
+      if (walk.cur === 'street' && inside(id)) {
+        const viaDoor = id !== 'carport';
+        walkText.textContent = viaDoor ? WT.opening_door : WT.opening_gate;
+        await (viaDoor ? setDoor(true) : setGate(true));
+        const first = viaDoor ? SID.entry : SID.carport;
+        await moveTo(first, { glide: true }); setStop(first);
+        if (first.id !== id) { if (s.f === 'uf') await climb('up'); await moveTo(s); }
+      } else if (id === 'street') {
+        if (cur && cur.f === 'uf') await climb('down');
+        await setGate(true); await moveTo(SID.carport); await moveTo(s, { glide: true }); setGate(false); setDoor(false);
+      } else await moveTo(s);
+      setStop(s);
+    } finally { walk.busy = false; }
+  }
+  async function stairAct(dir) {
+    if (walk.busy) return; walk.busy = true;
+    try { await climb(dir); const s = dir === 'up' ? SID.gallery : SID.hall; await moveTo(s); setStop(s); } finally { walk.busy = false; }
+  }
+  let walkPrev = 'tour';
+  async function enterWalk(autoGate) {
+    if (walk.on) return;
+    walkPrev = exploring ? 'explore' : 'tour';
+    if (exploring) { exploring = false; document.body.classList.remove('exploring'); tools.hidden = true; }
+    walk.on = true; document.body.classList.add('walking'); walkUI.hidden = false; if (lenis) lenis.stop();
+    gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0, mep: 0 });
+    gsap.set(orbit, { yaw: 0, pitch: 0, zoom: 1 });
+    dip.style.opacity = 1; const s = SID.street; Object.assign(walk, { x: s.x, y: s.y, z: eyeOf(s), yaw: s.yaw });
+    setStop(s); ringG.visible = true; fit();
+    await tw(dip, { opacity: 0 }, 0.6);
+    document.getElementById('walkExit').focus({ preventScroll: true });
+    if (autoGate) { await wait(500); goTo('carport'); }
+  }
+  async function exitWalk() {
+    if (!walk.on) return;
+    await tw(dip, { opacity: 1 }, 0.3);
+    walk.on = false; walk.cur = null; walk.busy = false; document.body.classList.remove('walking'); walkUI.hidden = true; ringG.visible = false;
+    gsap.killTweensOf(gateR.position); gsap.killTweensOf(doorG.rotation); gateR.position.set(0, 0, 0); doorG.rotation.y = 0; gateOpen = doorOpen = false;
+    gsap.set(orbit, { yaw: 0, pitch: 0, zoom: 1 }); fit();
+    if (walkPrev === 'explore') enterExplore(); else { exploring = true; exitExplore(); }
+    await tw(dip, { opacity: 0 }, 0.5);
+  }
+  document.getElementById('walkExit').addEventListener('click', exitWalk);
+  document.getElementById('walkBtn').addEventListener('click', () => enterWalk(false));
+  document.getElementById('walkBtn2').addEventListener('click', () => enterWalk(false));
+  window.addEventListener('keydown', e => { if (e.key === 'Escape' && walk.on) exitWalk(); });
+  // click / tap picking: the gate (any mode) and the floor rings (walk mode); ignored after a drag
+  const pick = new THREE.Raycaster(), ndc = new THREE.Vector2(); let downAt = null;
+  cv.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY }; });
+  cv.addEventListener('click', e => {
+    if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;
+    const r = cv.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    pick.setFromCamera(ndc, camera);
+    if (walk.on) {
+      const hit = pick.intersectObjects(rings.filter(g => g.visible), true)[0];
+      if (hit) { let g = hit.object; while (g.parent !== ringG) g = g.parent; const a = g.userData.act; a.stair ? stairAct(a.stair) : goTo(a.go); return; }
+      if (walk.cur === 'street') { if (pick.intersectObjects([gateL, gateR], true).length) goTo('carport'); else if (pick.intersectObject(doorG, true).length) goTo('entry'); }
+      return;
+    }
+    if (S.mix < 0.5 && pick.intersectObjects([gateL, gateR, doorG], true).length) enterWalk(true);
+  });
+  cv.addEventListener('pointermove', e => {
+    if (pts.size) return;
+    const r = cv.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    pick.setFromCamera(ndc, camera);
+    const targets = walk.on ? rings.filter(g => g.visible).concat(walk.cur === 'street' ? [gateL, gateR, doorG] : []) : (S.mix < 0.5 ? [gateL, gateR, doorG] : []);
+    cv.classList.toggle('pointing', targets.length > 0 && pick.intersectObjects(targets, true).length > 0);
+  });
+  function walkCam(time) {
+    orbit.pitch = THREE.MathUtils.clamp(orbit.pitch, -1.5, 1.5);
+    const th = walk.yaw - orbit.yaw * 0.8, ph = orbit.pitch * 0.8;
+    const P = V(walk.x, walk.y, walk.z); camera.position.copy(P);
+    camera.lookAt(P.x - Math.sin(th) * Math.cos(ph), P.y + Math.sin(ph), P.z - Math.cos(th) * Math.cos(ph));
+    const fov = THREE.MathUtils.clamp(74 * orbit.zoom, 30, 100); if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    walkLight.position.copy(P); walkLight.intensity = 0.85;
+    const k = 1 + Math.sin(time * 3) * 0.06; rings.forEach(g => g.userData.ring.scale.setScalar(k));
+  }
 
   // ---------- frame ----------
   function fade(group, o) {
@@ -834,10 +1189,10 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
       off.applyAxisAngle(side, -p).multiplyScalar(orbit.zoom);
       cp = tgt.clone().add(off);
     }
-    camera.position.copy(cp); camera.lookAt(tgt);
+    if (walk.on) walkCam(time); else { camera.position.copy(cp); camera.lookAt(tgt); walkLight.intensity = 0; }
     const nr = 1 - S.mix, ne = S.mix;
     gRoof.position.y = eRoof.position.y = S.roof * 6; gUpper.position.y = eUpper.position.y = S.upper * 5;
-    fade(site, nr); fade(gGround, nr); fade(gRoof, (1 - S.roof) * nr); fade(gUpper, (1 - S.upper) * nr);
+    fade(site, nr); fade(gGround, nr); fade(gRoof, (1 - S.roof) * nr); fade(gUpper, (1 - S.upper) * nr * (1 - 0.8 * S.mep));
     fade(eSite, ne); fade(eGround, ne); fade(eRoof, (1 - S.roof) * ne); fade(eUpper, (1 - S.upper) * ne);
     canopyG.visible = S.upper < 0.5; eCanopy.visible = S.upper < 0.5;
     LUF.forEach(s => s.material.opacity = S.lUF * (1 - S.upper) * nr);
@@ -847,9 +1202,10 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     qibla.visible = S.qibla * nr > 0.05; qibla.scale.setScalar(Math.max(S.qibla, 0.01));
     airMat.opacity = S.air * 0.9 * nr;
     const fG = nr * (1 - S.roof * (1 - S.upper)), fU = nr * (1 - S.upper) * S.roof;
-    for (const o of ovItems) { const op = o.base * S[o.kind] * (o.floor === 'gf' ? fG : fU); o.m.opacity = op; o.m.visible = op > 0.004; }
+    for (const o of ovItems) { const op = o.base * S[o.kind] * (o.kind === 'mep' ? (o.floor === 'gf' ? nr : nr * (1 - S.upper)) : (o.floor === 'gf' ? fG : fU)); o.m.opacity = op; o.m.visible = op > 0.004; }
     noiseLabels.forEach(n => n.s.material.opacity = S.priv * (n.floor === 'gf' ? fG : fU));
-    if (S.priv > 0.01) { const k = 1 + ((time * 0.8) % 1) * 0.8; pulses.forEach(r => { r.scale.setScalar(k); r.rotation.x = Math.PI / 2; }); }
+    mepLabels.forEach(n => n.s.material.opacity = S.mep * (n.floor === 'gf' ? nr : nr * (1 - S.upper)));
+    if (S.priv > 0.01 || S.mep > 0.01) { const k = 1 + ((time * 0.8) % 1) * 0.8; pulses.forEach(r => { r.scale.setScalar(k); r.rotation.x = Math.PI / 2; }); }
     if (S.circ > 0.01) {
       circFlows.forEach(f => { for (let i = 0; i < f.n; i++) { const u = ((i / f.n) + (reduced ? 0 : time * 0.9 / f.len)) % 1, p = f.path.getPointAt(u);
         f.arr[i * 3] = p.x; f.arr[i * 3 + 1] = p.y + 0.12; f.arr[i * 3 + 2] = p.z; } f.geo.attributes.position.needsUpdate = true; });
@@ -874,6 +1230,7 @@ nav button:focus-visible i{outline:2px solid var(--air);outline-offset:2px}
     const w = window.innerWidth, hgt = window.innerHeight, narrow = w < 760;
     camera.aspect = w / hgt; camera.fov = narrow ? 52 : 38;
     if (narrow) camera.setViewOffset(w, hgt, 0, hgt * 0.14, w, hgt); else camera.setViewOffset(w, hgt, -w * 0.16, 0, w, hgt);
+    if (walk.on) { camera.clearViewOffset(); camera.fov = 74 * orbit.zoom; }
     camera.updateProjectionMatrix(); renderer.setSize(w, hgt);
   }
   window.addEventListener('resize', () => { fit(); ScrollTrigger.refresh(); });
