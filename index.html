@@ -101,6 +101,34 @@ body.walking #stage canvas{touch-action:none}
 #walkBar button[aria-pressed="true"]{background:var(--ink);color:#fff}
 #walkFoot .hint{pointer-events:none;background:var(--card);padding:4px 10px;border-radius:999px;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
 @media (max-width:760px){#walkTitle{font-size:17px}#walkText{font-size:13px}#walkUI .wcard{top:calc(62px + env(safe-area-inset-top,0px))}}
+#gameBtn{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+body.exploring .dock-row #gameBtn{display:none}
+body.gaming .story,body.gaming nav,body.gaming .dock{visibility:hidden}
+body.gaming #stage canvas{touch-action:none;cursor:crosshair}
+body.gaming.locked #stage canvas{cursor:none}
+#gameUI[hidden]{display:none}
+#gameUI{position:fixed;inset:0;z-index:4;pointer-events:none;font-family:var(--f-display)}
+#gameUI .gcard{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(16px + env(safe-area-inset-top,0px));max-width:min(380px,calc(100vw - 32px));background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:3px}
+#gameUI .gcard .eyebrow{margin:0}
+#gRoom{margin:0;font-size:22px;line-height:1.2;text-wrap:balance}
+#gFloor{font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
+#gInfo,#gDoor{margin:0;font-size:14px}
+#gDoor[data-low="true"],#gInfo[data-low="true"]{color:#b5462a;font-weight:600}
+#gTop{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(16px + env(safe-area-inset-top,0px));display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;pointer-events:auto}
+#gTop button,#gH button{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;background:var(--card);color:var(--ink);border:1px solid var(--rule);padding:9px 14px;border-radius:999px}
+#gTop button.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+#gTop button:focus-visible,#gH button:focus-visible{outline:2px solid var(--air);outline-offset:2px}
+#gH{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:3px 4px 3px 12px;font-family:var(--f-mono);font-size:12px}
+#gH button{padding:5px 11px;border:0;background:transparent}
+#gHv{min-width:52px;text-align:center;font-weight:600}
+#gCross{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.55)}
+#gHint{position:absolute;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));width:max-content;max-width:calc(100vw - 32px);text-align:center;background:var(--card);padding:6px 12px;border-radius:12px;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
+#gStart{position:absolute;left:50%;top:58%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-family:var(--f-mono);font-size:12px}
+#gBump{position:absolute;left:50%;top:38%;transform:translateX(-50%);max-width:calc(100vw - 32px);text-align:center;background:#b5462a;color:#fff;padding:8px 14px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;transition:opacity .25s}
+#gBump.on{opacity:1}
+#gJoy{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;border:2px solid rgba(255,255,255,.8);background:rgba(0,0,0,.12)}
+#gJoy i{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(255,255,255,.85)}
+@media (max-width:760px){#gRoom{font-size:18px}#gInfo,#gDoor{font-size:13px}#gameUI .gcard{top:calc(64px + env(safe-area-inset-top,0px))}}
 </style>
 
 <div id="stage" aria-hidden="true"></div>
@@ -112,8 +140,15 @@ body.walking #stage canvas{touch-action:none}
   <button type="button" id="walkExit">Keluar</button>
   <div id="walkFoot"><div class="hint">Seret untuk melihat 360° · ketuk lingkaran untuk berjalan · scroll atau cubit untuk memperlebar pandangan</div><div id="walkBar" role="group" aria-label="Ruang"></div></div>
 </div>
+<div id="gameUI" hidden>
+  <div class="gcard"><div class="eyebrow" id="gEye"></div><h2 id="gRoom"></h2><div id="gFloor"></div><p id="gInfo"></p><p id="gDoor" hidden></p></div>
+  <div id="gTop"><div id="gH"><span>Tinggi</span><button type="button" id="gHm" aria-label="−">−</button><span id="gHv">176 cm</span><button type="button" id="gHp" aria-label="+">+</button></div>
+    <button type="button" id="gView">Orang ke-3</button><button type="button" id="gExit" class="dark">Keluar</button></div>
+  <div id="gCross"></div><div id="gBump"></div><div id="gStart">Klik layar untuk mulai</div><div id="gJoy" hidden><i></i></div>
+  <div id="gHint"></div>
+</div>
 <div class="dock" id="dock">
-  <div class="dock-row"><button type="button" id="walkBtn" class="pill">Masuk ke rumah</button><button type="button" id="exploreBtn" class="pill">Jelajahi 3D</button></div>
+  <div class="dock-row"><button type="button" id="gameBtn" class="pill">Mode game</button><button type="button" id="walkBtn" class="pill">Masuk ke rumah</button><button type="button" id="exploreBtn" class="pill">Jelajahi 3D</button></div>
   <div id="tools" class="tools" hidden>
     <div id="ovlLegend" class="ovl-legend" hidden></div>
     <div class="seg" role="group" aria-label="Rumah">
@@ -137,7 +172,7 @@ body.walking #stage canvas{touch-action:none}
       <button type="button" id="zoomIn" aria-label="Perbesar">+</button>
       <button type="button" id="zoomOut" aria-label="Perkecil">−</button>
       <button type="button" id="resetBtn">Atur ulang</button>
-      <button type="button" id="walkBtn2">Masuk ke rumah</button>
+      <button type="button" id="walkBtn2">Masuk ke rumah</button><button type="button" id="gameBtn2">Mode game</button>
       <button type="button" id="exitBtn" class="dark">Kembali ke tur</button>
     </div>
     <div class="hint" id="exploreHint">Seret untuk memutar · scroll atau cubit untuk zoom · Esc untuk keluar</div>
@@ -148,7 +183,7 @@ body.walking #stage canvas{touch-action:none}
 <main class="story" id="story">
   <section class="step" data-name="Rumah">
     <div class="card">
-      <div class="eyebrow">Konsep renovasi v4 · Bekasi</div>
+      <div class="eyebrow">Konsep renovasi v5 · Bekasi</div>
       <h1>Penrose House</h1>
       <p>Rumah dua lantai di lahan 9.0 × 17.8 m, dirancang ulang dengan satu gagasan: udara dan cahaya mengalir lurus menembus rumah.</p>
       <dl class="facts"><dt>Lahan</dt><dd>9.0 × 17.8 m, muka rumah menghadap timur</dd><dt>Lantai</dt><dd>2, tinggi antar lantai 3.4 m</dd><dt>Ruang</dt><dd>4 kamar tidur, mushalla, ruang keluarga terbuka</dd><dt>Gaya</dt><dd>Minimalis modern, sentuhan Japandi</dd></dl>
@@ -159,7 +194,7 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">01 · Muka depan</div>
       <h2>Tidak ada lantai di atas mobil</h2>
-      <p>Dua MPV parkir berdampingan di bawah kanopi baja ringan. Di garis jalan: pagar geser besi hollow hitam untuk mobil, pintu kayu oak terpisah untuk orang, dinding batu alam dengan papan nama, dan roster putih di depan lorong. Di lantai 2, setiap kamar depan punya balkon 1.2 m sendiri.</p>
+      <p>Toyota Voxy dan Hyundai Creta parkir berdampingan di bawah kanopi baja ringan. Di garis jalan: pagar geser besi expanded metal hitam untuk mobil, pintu kayu oak terpisah untuk orang, dinding batu alam dengan papan nama, dan roster putih di depan lorong. Di lantai 2, setiap kamar depan punya balkon 1.2 m sendiri.</p>
       <dl class="facts"><dt>5.6 × 5.5 m</dt><dd>Carport untuk 2 MPV</dd><dt>2.4 × 3.0 m</dt><dd>Foyer terbuka ke carport</dd></dl>
     </div>
   </section>
@@ -167,7 +202,7 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">02 · Material</div>
       <h2>Minimalis dengan kehangatan Japandi</h2>
-      <p>Dinding putih yang tenang dan kusen aluminium charcoal ramping dengan kaca bening, dilembutkan kayu oak muda: kisi di foyer dan dinding tangga, plafon carport, dan sirip barat. Pagar mobil dari besi hollow hitam vertikal, di sebelahnya pintu orang dari kayu oak, dinding batu alam dengan papan nama, dan roster beton putih.</p>
+      <p>Dinding putih yang tenang dan kusen aluminium charcoal ramping dengan kaca bening, dilembutkan kayu oak muda: kisi di foyer dan dinding tangga, plafon carport, dan sirip barat. Pagar mobil dari besi expanded metal (jaring wajik) hitam, di sebelahnya pintu orang dari kayu oak, dinding batu alam dengan papan nama, dan roster beton putih.</p>
       <ul class="swatches">
         <li><i style="--c:#2a2e32"></i>Kusen aluminium charcoal</li>
         <li><i style="--c:#b5d0da"></i>Kaca bening</li>
@@ -177,7 +212,7 @@ body.walking #stage canvas{touch-action:none}
         <li><i style="--c:#dcd8cf"></i>Lantai terrazzo, oak di lantai 2</li>
         <li><i style="--c:#e3e1da"></i>Koral putih, batu pijakan</li>
         <li><i style="--c:#b9b7b0"></i>Dinding batas tekstur papan</li>
-        <li><i style="--c:#141618"></i>Pagar besi hollow hitam</li>
+        <li><i style="--c:#141618"></i>Pagar besi expanded metal hitam</li>
         <li><i style="--c:#9b978f"></i>Dinding batu alam, roster putih</li>
       </ul>
     </div>
@@ -186,7 +221,7 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">03 · Lorong utara</div>
       <h2>Lorong 1 m terbuka ke langit</h2>
-      <p><span class="air">Jalur udara</span> masuk lewat roster di depan lorong dan mengalir di sisi utara sampai taman belakang. Ruang keluarga terbuka ke lorong lewat pintu geser 2.4 m, dan udara panas keluar melalui void di atasnya.</p>
+      <p><span class="air">Jalur udara</span> masuk lewat roster di depan lorong dan mengalir di sisi utara sampai taman belakang. Rumah terbuka ke lorong lewat pintu kaca geser di hall dan ruang tengah, dan udara panas keluar melalui void di atasnya.</p>
       <dl class="facts"><dt>1.0 × 15.8 m</dt><dd>Lorong, terbuka di kedua lantai</dd><dt>Servis</dt><dd>Menuju laundry tanpa melintasi rumah</dd></dl>
     </div>
   </section>
@@ -194,7 +229,7 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">04 · Atap dibuka</div>
       <h2>Lantai 2</h2>
-      <p>Kamar anak di depan, masing-masing dengan pintu geser ke balkon berbingkai 1.2 m dengan sirip kayu dan pot tanaman, galeri di sepanjang void di atas ruang keluarga, sudut keluarga, dan kamar utama di bagian belakang yang tenang.</p>
+      <p>Kamar anak di depan, masing-masing dengan pintu geser ke balkon berbingkai 1.2 m dengan sirip kayu dan pot tanaman, galeri di sepanjang void dengan sofa keluarga, ruang kerja tertutup untuk meeting online, dan kamar utama di bagian belakang yang tenang.</p>
       <dl class="facts"><dt>20.2 m²</dt><dd>Kamar utama + walk-in closet + KM dalam</dd><dt>11.6 / 9.5 m²</dt><dd>Kamar anak 1 dan 2, KM bersama</dd><dt>14.1 m²</dt><dd>Void di atas ruang keluarga</dd></dl>
     </div>
   </section>
@@ -202,8 +237,8 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">05 · Lantai 2 diangkat</div>
       <h2>Lantai 1</h2>
-      <p>Satu ruang terbuka untuk ruang keluarga, makan, dan dapur. Kamar tamu di depan dekat tangga, dan ruang servis berkumpul di belakang.</p>
-      <dl class="facts"><dt>35.2 m²</dt><dd>Ruang keluarga, makan, dapur</dd><dt>11.6 m²</dt><dd>Kamar tamu</dd><dt>7.2 m²</dt><dd>Kamar ART + mini WC</dd><dt>10.0 m²</dt><dd>Laundry &amp; servis</dd></dl>
+      <p>Ruang keluarga dengan dinding TV, meja makan menyambung dengan island, dan ruang tengah yang terbuka ke lorong lewat pintu kaca geser. Dapur basah semi-outdoor di balik kaca; ruang servis berkumpul di belakang.</p>
+      <dl class="facts"><dt>35.2 m²</dt><dd>R. keluarga, makan, ruang tengah, dapur kering</dd><dt>11.6 m²</dt><dd>Kamar tamu</dd><dt>7.2 m²</dt><dd>Kamar ART + mini WC</dd><dt>10.0 m²</dt><dd>Laundry &amp; servis</dd></dl>
     </div>
   </section>
   <section class="step" data-name="Zonasi">
@@ -244,7 +279,7 @@ body.walking #stage canvas{touch-action:none}
       <div class="eyebrow">09 · Utilitas bangunan</div>
       <h2>Udara, air, listrik dan Wi-Fi</h2>
       <div class="ana-row">
-        <div class="ana-txt"><p>AC inverter di empat kamar tidur dengan unit luar tersembunyi di dudukan berkisi dan di dak atap. Satu pemanas air surya untuk semua shower; tandon bawah dan pompa pendorong memberi tekanan merata. Wi-Fi mesh 3 node menjangkau dua lantai, semuanya cukup dengan daya PLN 3.500 VA.</p><ul class="chips"><li><i style="background:#1c6fd1"></i>Air bersih dingin</li><li><i style="background:#d63c2f"></i>Air panas</li><li><i style="background:#0b7285"></i>Pipa refrigeran</li><li><i style="background:#7a3fb5"></i>Kabel data Cat6</li><li><i style="background:#ffffff"></i>AC unit dalam</li><li><i style="background:#9aa5ad"></i>AC unit luar</li><li><i style="background:#7a3fb555"></i>Node Wi-Fi mesh</li></ul></div>
+        <div class="ana-txt"><p>Tahap 1: AC inverter di kamar utama, ruang kerja, dan satu unit 1½ PK untuk ruang keluarga, ruang tengah, dan dapur kering yang menyatu; kamar anak dan tamu disiapkan pipanya untuk nanti. Water heater listrik 30 L di KM utama dan KM anak menyala dengan timer (06–08 dan 19–22); toren 1.000 L kembali ke dak atap kamar utama dengan booster kecil, diisi pompa lama di pojok taman belakang, dan septic tank lama tetap di bawah carport. Wi-Fi mesh 3 node menjangkau dua lantai, semuanya cukup dengan daya PLN 3.500 VA.</p><ul class="chips"><li><i style="background:#1c6fd1"></i>Air bersih dingin</li><li><i style="background:#d63c2f"></i>Air panas</li><li><i style="background:#0b7285"></i>Pipa refrigeran</li><li><i style="background:#7a3fb5"></i>Kabel data Cat6</li><li><i style="background:#ffffff"></i>AC unit dalam</li><li><i style="background:#9aa5ad"></i>AC unit luar</li><li><i style="background:#7a3fb555"></i>Node Wi-Fi mesh</li></ul></div>
         <figure class="mini-fig"><svg viewBox="-0.2 -0.2 9.4 18.2" class="mini" aria-hidden="true"><rect x="0" y="0" width="9" height="17.8" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".08"/><rect x="0" y="12.3" width="9" height="5.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".06" stroke-dasharray=".25 .2"/><rect x="6.3" y="5.800000000000001" width="2.1000000000000005" height="2.4000000000000004" fill="#d63c2f" fill-opacity=".2" stroke="#d63c2f" stroke-width=".08"/><path d="M8.15,7.200000000000001 L7.4,7.200000000000001" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M7.9,7.200000000000001 L7.9,2.5500000000000007 L5.0,2.5500000000000007" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M8.15,7.200000000000001 L8.15,7.600000000000001 L7.6,7.600000000000001" fill="none" stroke="#1c6fd1" stroke-width=".2"/><path d="M7.75,6.550000000000001 L7.75,7.450000000000001 L7.3,7.450000000000001" fill="none" stroke="#d63c2f" stroke-width=".2"/><path d="M7.75,6.550000000000001 L7.75,2.75 L5.1,2.75" fill="none" stroke="#d63c2f" stroke-width=".2"/><path d="M0.3,3.200000000000001 L0.6,3.200000000000001 L0.6,1.3000000000000007 L3.65,1.3000000000000007 L3.65,1.0500000000000007" fill="none" stroke="#0b7285" stroke-width=".2"/><path d="M1.0,9.100000000000001 L1.0,9.25 L3.05,9.25 L3.05,12.600000000000001 L3.4,12.600000000000001" fill="none" stroke="#0b7285" stroke-width=".2"/><path d="M7.2,9.100000000000001 L7.2,9.25 L5.5,9.25 L5.5,12.600000000000001 L5.2,12.600000000000001" fill="none" stroke="#0b7285" stroke-width=".2"/><rect x="0.08" y="2.8000000000000007" width="0.21999999999999997" height="0.8000000000000007" fill="#0b7285"/><rect x="0.6" y="8.88" width="0.7999999999999999" height="0.22000000000000064" fill="#0b7285"/><rect x="6.8" y="8.88" width="0.7999999999999998" height="0.22000000000000064" fill="#0b7285"/><rect x="3.2" y="0.4499999999999993" width="0.8999999999999995" height="0.6000000000000014" fill="#0b7285"/><rect x="3.4" y="12.420000000000002" width="0.8000000000000003" height="0.4299999999999997" fill="#0b7285"/><rect x="4.4" y="12.420000000000002" width="0.7999999999999998" height="0.4299999999999997" fill="#0b7285"/><path d="M5.38,9.55 L5.0,5.9" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L4.45,2.9000000000000004" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L2.9,9.05" stroke="#7a3fb5" stroke-width=".16"/><path d="M5.38,9.55 L5.55,9.05" stroke="#7a3fb5" stroke-width=".16"/><circle cx="5.0" cy="5.9" r="6.0" fill="#7a3fb5" fill-opacity=".08" stroke="#7a3fb5" stroke-width=".08" stroke-dasharray=".3 .25"/></svg><figcaption>Denah lantai 2</figcaption></figure>
       </div>
       <p class="hint">Dinding lantai 2 dibuat tembus pandang agar pipa di kedua lantai terlihat.</p>
@@ -254,7 +289,7 @@ body.walking #stage canvas{touch-action:none}
     <div class="card">
       <div class="eyebrow">10 · Taman belakang</div>
       <h2>Menghadap taman</h2>
-      <p>Mushalla berada di balik pintu kaca yang menghadap taman belakang, dengan saf salat diarahkan ke <span class="qib">kiblat 295°</span>. Teras belakang beratap menghubungkan dapur, lorong, dan taman.</p>
+      <p>Mushalla dimasuki langsung dari tempat wudu 1 keran, dengan saf salat diarahkan ke <span class="qib">kiblat 295°</span> dan pintu kaca ke taman belakang. Di sebelahnya, dapur basah terbuka ke lorong dan taman lewat kaca.</p>
       <dl class="facts"><dt>2.0 × 2.4 m</dt><dd>Mushalla untuk 2 orang, tempat wudu di sebelahnya</dd><dt>4.0 × 2.0 m</dt><dd>Taman belakang, terbuka ke langit</dd></dl>
     </div>
   </section>
@@ -409,11 +444,12 @@ body.walking #stage canvas{touch-action:none}
   }
 
   // opening types: d door, w window, s sliding glass door, o open passage
-  const OP = { d: [0, 2.1, false], w: [0.9, 2.1, true], s: [0, 2.4, true], o: [0, 2.4, false] };
+  const OP = { d: [0, 2.1, false], D: [0, 2.1, false], w: [0.9, 2.1, true], s: [0, 2.4, true], o: [0, 2.4, false] };
   // vertical oak slats on a face along x; face at yFace, slats stand proud toward smaller y (the street)
   function slats(group, mat, x0, x1, yFace, z0, z1, pitch = 0.09, w = 0.045) {
     for (let x = x0; x + w <= x1 + 1e-6; x += pitch) box(group, mat, x, yFace - 0.05, z0, x + w, yFace - 0.01, z1);
   }
+  const DOORS = [];
   function wall(group, M, x0, y0, x1, y1, z0, H, ops = [], mat, t = T) {
     mat = mat || M.wall; const h = t / 2, horiz = Math.abs(y1 - y0) < 1e-6;
     const piece = (a, b, za, zb, m) => horiz ? box(group, m, a, y0 - h, za, b, y0 + h, zb) : box(group, m, x0 - h, a, za, x0 + h, b, zb);
@@ -431,8 +467,11 @@ body.walking #stage canvas{touch-action:none}
         const fr = (p, q, c, d) => horiz ? box(group, M.alu, p, y0 - ft / 2, c, q, y0 + ft / 2, d) : box(group, M.alu, x0 - ft / 2, p, c, x0 + ft / 2, q, d);
         fr(a, a + fw, za, zb); fr(b - fw, b, za, zb); fr(a, b, za, za + fw); fr(a, b, zb - fw, zb);
         if (k === 's' || b - a > 1.3) { const m = (a + b) / 2; fr(m - fw / 2, m + fw / 2, za, zb); }
-      } else if (k === 'd') {
-        horiz ? box(group, M.oak, a + 0.03, y0 - 0.02, z0, b - 0.03, y0 + 0.02, z0 + 2.08) : box(group, M.oak, x0 - 0.02, a + 0.03, z0, x0 + 0.02, b - 0.03, z0 + 2.08);
+      } else if (k === 'd' || k === 'D') {
+        const leaf = horiz ? box(group, M.oak, a + 0.03, y0 - 0.02, z0, b - 0.03, y0 + 0.02, z0 + 2.08) : box(group, M.oak, x0 - 0.02, a + 0.03, z0, x0 + 0.02, b - 0.03, z0 + 2.08);
+        if (leaf) { const far = k === 'D', hp = far ? b - 0.03 : a + 0.03, pv = new THREE.Group(); pv.position.copy(horiz ? V(hp, y0, z0) : V(x0, hp, z0)); group.add(pv);
+          group.remove(leaf); leaf.position.sub(pv.position); pv.add(leaf);
+          DOORS.push({ pv, group, horiz, flip: far ? -1 : 1, x: horiz ? (a + b) / 2 : x0, y: horiz ? y0 : (a + b) / 2, z0, ang: 0, target: 0 }); }
       }
       cur = b;
     });
@@ -462,17 +501,24 @@ body.walking #stage canvas{touch-action:none}
   box(canopyG, MS.steel, 0, 0, 2.86, 5.6, 0.12, 3.0);
   for (let x = 0.08; x < 5.5; x += 0.12) box(canopyG, MS.oak, x, 0.12, 2.93, x + 0.06, 4.25, 2.99, false);
   [0.15, 5.45].forEach(x => box(site, MS.steel, x - 0.06, 0.1, 0, x + 0.06, 0.22, 3.0));
-  // ---------- street frontage: black bar car gate | white pillar | oak people door | stone name wall | white roster ----------
+  // ---------- street frontage: black expanded-metal car gate | white pillar | oak people door | stone name wall | white roster ----------
   const GATE_BLACK = '#141618', FENCE = 2.5;
   const gateFrame = new THREE.MeshStandardMaterial({ color: GATE_BLACK, roughness: 0.5, metalness: 0.5 }); gateFrame.userData.base = 1;
   const lampMat = new THREE.MeshStandardMaterial({ color: '#fff4dc', emissive: '#ffd08a', emissiveIntensity: 1.4 }); lampMat.userData.base = 1;
-  // car gate 0.10-5.40: two sliding leaves of 40 mm square bars (right leaf slides behind the left one to open)
+  // car gate 0.10-5.40: two sliding leaves, 50 × 50 frame with expanded-metal mesh (right leaf slides behind the left one to open)
   const gateL = new THREE.Group(), gateR = new THREE.Group(); site.add(gateL, gateR);
+  const expanded = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 64; const x = c.getContext('2d');   // one diamond per tile
+    x.fillStyle = '#000'; x.fillRect(0, 0, 128, 64); x.strokeStyle = '#fff'; x.lineWidth = 12; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(0, 32); x.lineTo(64, 0); x.lineTo(128, 32); x.lineTo(64, 64); x.closePath(); x.stroke();
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
   [[gateL, 0.1, 2.75], [gateR, 2.75, 5.4]].forEach(([g, a, b]) => { const H = 2.2;
     box(g, gateFrame, a, -0.04, 0, b, 0.04, 0.06); box(g, gateFrame, a, -0.04, H - 0.06, b, 0.04, H);
-    box(g, gateFrame, a, -0.04, H * 0.66, b, 0.04, H * 0.66 + 0.05);
+    box(g, gateFrame, a, -0.04, H * 0.5, b, 0.04, H * 0.5 + 0.05);
     box(g, gateFrame, a, -0.04, 0, a + 0.05, 0.04, H); box(g, gateFrame, b - 0.05, -0.04, 0, b, 0.04, H);
-    for (let x = a + 0.12; x < b - 0.1; x += 0.11) box(g, gateFrame, x, -0.02, 0.06, x + 0.04, 0.02, H - 0.06); });
+    // expanded metal sheet (diamond mesh ~ 60 × 25 mm) welded inside the frame
+    const em = expanded.clone(); em.repeat.set((b - a - 0.1) / 0.06, (H - 0.12) / 0.025); em.needsUpdate = true;
+    const emM = new THREE.MeshStandardMaterial({ color: GATE_BLACK, roughness: 0.55, metalness: 0.5, alphaMap: em, alphaTest: 0.5, side: THREE.DoubleSide }); emM.userData.base = 1;
+    box(g, emM, a + 0.05, -0.006, 0.06, b - 0.05, 0.006, H - 0.06, false); });
   // white pillar 5.40-5.95 with up/down wall lights + intercom
   box(site, MS.wall, 5.4, -0.06, 0, 5.95, 0.3, FENCE);
   box(site, gateFrame, 5.6, -0.12, 1.85, 5.75, -0.06, 2.15); box(site, lampMat, 5.62, -0.125, 1.88, 5.73, -0.11, 2.12, false);
@@ -516,17 +562,79 @@ body.walking #stage canvas{touch-action:none}
   box(site, rosterMat, 8.04, 0.0, 0.1, 8.96, 0.1, FENCE - 0.1);
   box(site, MS.wall, 8.0, -0.02, 0, 9.0, 0.12, 0.1); box(site, MS.wall, 8.0, -0.02, FENCE - 0.1, 9.0, 0.12, FENCE);
   box(site, MS.wall, 7.98, -0.02, 0, 8.04, 0.12, FENCE); box(site, MS.wall, 8.96, -0.02, 0, 9.0, 0.12, FENCE);
-  // cars
-  [1.5, 4.1].forEach(cx => {
-    box(site, MS.car, cx - 0.9, 0.5, 0.2, cx + 0.9, 5.1, 1.05);
-    box(site, MS.glass, cx - 0.8, 1.6, 1.05, cx + 0.8, 4.2, 1.6, false);
-    box(site, MS.car, cx - 0.8, 1.7, 1.55, cx + 0.8, 4.1, 1.65);
-  });
+  // cars, modelled from side profiles at real proportions (no badges):
+  //   Toyota Voxy 2018 (R80 facelift) 4.71 × 1.735 × 1.825 m, wheelbase 2.85 — boxy MPV, steep windshield, tall vertical tail lights
+  //   Hyundai Creta 2022 4.315 × 1.79 × 1.635 m, wheelbase 2.61 — compact SUV, black wheel-arch cladding, roof rails, sloping tail
+  const CAR = {
+    voxy: { W: 1.735, wb: [0.8, 3.65], r: 0.32, clad: false, rails: false,
+      body: [[0.04, 0.3], [4.62, 0.3], [4.71, 0.45], [4.69, 0.82], [4.5, 0.98], [3.86, 1.08], [0.04, 1.06], [0.0, 0.6]],
+      glass: [[0.08, 1.02], [3.9, 1.06], [3.16, 1.73], [0.2, 1.75], [0.1, 1.7]],
+      roof: [[0.13, 1.71], [3.21, 1.71], [3.13, 1.79], [0.22, 1.825], [0.13, 1.79]],
+      pillars: [[0.98, 1.06], [2.02, 2.1]], belt: [1.02, 1.74],
+      head: [4.56, 4.7, 0.8, 0.92], grille: [4.67, 4.73, 0.42, 0.8, 0.36], tail: [-0.03, 0.04, 0.9, 1.62, 0.16], mirror: [3.7, 3.86, 1.08, 1.2] },
+    creta: { W: 1.79, wb: [0.82, 3.43], r: 0.345, clad: true, rails: true,
+      body: [[0.06, 0.42], [4.22, 0.42], [4.31, 0.56], [4.3, 0.86], [4.1, 1.01], [3.16, 1.11], [0.05, 1.1], [0.0, 0.72]],
+      glass: [[0.16, 1.07], [3.2, 1.1], [2.46, 1.55], [0.52, 1.57], [0.24, 1.44]],
+      roof: [[0.27, 1.5], [2.52, 1.53], [2.43, 1.61], [0.56, 1.635], [0.31, 1.58]],
+      pillars: [[0.74, 0.96], [1.86, 1.95]], belt: [1.07, 1.57],
+      head: [4.18, 4.31, 0.9, 0.96], grille: [4.27, 4.33, 0.55, 0.86, 0.3], tail: [-0.03, 0.04, 0.95, 1.06, 0.55], mirror: [3.0, 3.15, 1.1, 1.22] },
+  };
+  function car(group, cx, y0, kind, paint) {
+    const C = CAR[kind], W2 = C.W, g = new THREE.Group(); g.position.copy(V(cx - W2 / 2, y0, 0)); g.rotation.y = Math.PI / 2; group.add(g);
+    const mat = (c, o = {}) => { const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.35, ...o }); m.userData.base = 1; return m; };
+    const body = mat(paint, { roughness: 0.28, metalness: 0.15 }), glassD = mat('#1c252c', { roughness: 0.08, metalness: 0.5 }), trim = mat('#16191c', { roughness: 0.6 });
+    const tyre = mat('#1a1a1a', { roughness: 0.9 }), rim = mat('#b9bec3', { roughness: 0.3, metalness: 0.7 }), chrome = mat('#cfd3d6', { roughness: 0.15, metalness: 0.8 });
+    const head = mat('#f4f7fb', { emissive: '#dfe8f5', emissiveIntensity: 0.35 }), tail = mat('#b3121b', { emissive: '#7a0a10', emissiveIntensity: 0.5 });
+    const ext = (pts, depth, s0, m, bev = 0.05) => { const sh = new THREE.Shape(pts.map(([u, v]) => new THREE.Vector2(u, v)));
+      const geo = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: bev > 0, bevelThickness: bev, bevelSize: bev, bevelSegments: 3, curveSegments: 6 });
+      const o = new THREE.Mesh(geo, m); o.position.z = s0; o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
+    const lb = (m, u0, u1, v0, v1, s0, s1) => { const o = new THREE.Mesh(new THREE.BoxGeometry(u1 - u0, v1 - v0, s1 - s0), m);
+      o.position.set((u0 + u1) / 2, (v0 + v1) / 2, (s0 + s1) / 2); o.castShadow = true; g.add(o); return o; };
+    const L = C.body[2][0];
+    ext(C.body, W2 - 0.1, 0.05, body); ext(C.glass, W2 - 0.26, 0.13, glassD, 0); ext(C.roof, W2 - 0.2, 0.1, body, 0.03);
+    C.pillars.forEach(([a, b]) => lb(body, a, b, C.belt[0], C.belt[1], 0.11, W2 - 0.11));
+    lb(trim, 0.3, L - 0.4, 0.12, C.body[0][1] + 0.04, 0.25, W2 - 0.25);                                     // underbody
+    if (C.clad) { lb(trim, 0.08, L - 0.12, 0.42, 0.6, -0.012, W2 + 0.012);                                  // SUV cladding + arches
+      C.wb.forEach(u => [[-0.02, 0.03], [W2 - 0.03, W2 + 0.02]].forEach(([a, b]) => lb(trim, u - C.r - 0.08, u + C.r + 0.08, 0.6, C.r * 2 + 0.1, a, b))); }
+    if (C.rails) [0.2, W2 - 0.24].forEach(s => lb(trim, 0.5, 2.4, C.roof[3][1], C.roof[3][1] + 0.05, s, s + 0.04));
+    const [h0, h1, hv0, hv1] = C.head; [0.1, W2 - 0.45].forEach(s => lb(head, h0, h1, hv0, hv1, s, s + 0.35));
+    const [g0, g1, gv0, gv1, gi] = C.grille; lb(kind === 'voxy' ? chrome : trim, g0, g1, gv0, gv1, gi, W2 - gi);
+    const [t0, t1, tv0, tv1, tw] = C.tail; [0.1, W2 - 0.1 - tw].forEach(s => lb(tail, t0, t1, tv0, tv1, s, s + tw));
+    lb(trim, -0.02, 0.05, C.body[0][1] + 0.04, C.body[0][1] + 0.2, 0.2, W2 - 0.2); lb(trim, L - 0.12, L - 0.02, C.body[0][1] + 0.02, C.body[0][1] + 0.16, 0.15, W2 - 0.15);
+    const [m0, m1, mv0, mv1] = C.mirror; [[-0.13, 0.0], [W2, W2 + 0.13]].forEach(([a, b]) => lb(body, m0, m1, mv0, mv1, a, b));
+    lb(head, L - 0.02, L, 0.5, 0.62, W2 / 2 - 0.22, W2 / 2 + 0.22); lb(head, -0.04, -0.02, 0.62, 0.74, W2 / 2 - 0.22, W2 / 2 + 0.22);   // plates
+    const tg = new THREE.CylinderGeometry(C.r, C.r, 0.22, 26), rg = new THREE.CylinderGeometry(C.r * 0.62, C.r * 0.62, 0.235, 18);
+    C.wb.forEach(u => [0.12, W2 - 0.12].forEach(s => { [[tg, tyre], [rg, rim]].forEach(([geo, m]) => {
+      const w = new THREE.Mesh(geo, m); w.rotation.x = Math.PI / 2; w.position.set(u, C.r, s); w.castShadow = true; g.add(w); }); }));
+    return g;
+  }
+  car(site, 1.5, 0.42, 'voxy', '#1b1d20'); car(site, 4.1, 0.62, 'creta', '#a3161c');
   // tree + a small planter by the front door
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 2.4, 10), MS.wood);
-  trunk.position.copy(V(8.3, 17.1, 1.2)); trunk.castShadow = true; site.add(trunk);
-  const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95, 1), MS.green);
-  crown.position.copy(V(8.3, 17.1, 3.0)); crown.castShadow = true; site.add(crown);
+
+  // existing pump in the backyard rear-right corner behind oak slats (it fills the toren on the master flat roof); air purifiers
+  { box(site, MS.car, 7.4, 17.25, 0, 7.82, 17.65, 0.4);
+    for (let x = 7.3; x < 7.96; x += 0.11) box(site, MS.oak, x, 16.66, 0, x + 0.06, 16.72, 1.5); }
+  box(gGround, MG.inner, 3.08, 12.97, 0, 3.38, 13.3, 0.62); box(gUpper, MU.inner, 4.1, 15.55, UF, 4.42, 15.87, UF + 0.62);
+  // backyard: low planting only — a stone planter bed along the back wall with low shrubs and grasses,
+  // and vertical gardens (green walls) on the back and north boundary walls; the sky stays open
+  { const lm = c => { const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 }); m.userData.base = 1; return m; };
+    const LA = lm('#4b7a3c'), LB = lm('#6a9446'), LC = lm('#2e5a2b'), LD = lm('#86a957'), ball = new THREE.SphereGeometry(1, 9, 7);
+    const blob = (m, x, y, z, rx, ry, rz) => { const o = new THREE.Mesh(ball, m); o.scale.set(rx, rz, ry); o.position.copy(V(x, y, z)); o.castShadow = true; site.add(o); };
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    box(site, MS.stone, 5.08, 17.15, 0, 6.6, 17.725, 0.3);                     // planter bed, 30 cm high
+    box(site, lm('#6b5440'), 5.13, 17.2, 0.3, 6.55, 17.7, 0.32, false);         // soil
+    [[5.3, 17.45, 0.28], [5.75, 17.4, 0.34], [6.25, 17.47, 0.3]].forEach(([x, y, r]) => blob(LA, x, y, 0.32 + r * 0.7, r, r * 0.9, r * 0.8));
+    for (let x = 5.2; x < 6.5; x += 0.17) { const h = 0.35 + rnd() * 0.25;            // grasses in front
+      const g = new THREE.Mesh(new THREE.ConeGeometry(0.07, h, 6), rnd() > 0.5 ? LD : LB); g.position.copy(V(x, 17.24 + rnd() * 0.06, 0.32 + h / 2)); site.add(g); }
+    [[5.25, 16.75, 0.22], [7.15, 16.3, 0.2]].forEach(([x, y, r]) => blob(LB, x, y, r * 0.7, r, r, r * 0.75));       // two low clumps in the lawn
+    const wallG = (x0, y0, x1, y1, z0, z1, n) => {                              // green-wall panel + leaf clumps
+      box(site, LC, x0, y0, z0, x1, y1, z1, false);
+      const ax = Math.abs(y1 - y0) < 0.1, fy = ax ? Math.min(y0, y1) : 0, fx = ax ? 0 : Math.min(x0, x1);
+      for (let i = 0; i < n; i++) { const r = 0.08 + rnd() * 0.07, z = z0 + 0.08 + rnd() * (z1 - z0 - 0.16), m = [LA, LB, LC, LD][i % 4];
+        if (ax) blob(m, x0 + 0.06 + rnd() * (x1 - x0 - 0.12), fy - r * 0.5, z, r, r * 0.7, r);
+        else blob(m, fx - r * 0.5, y0 + 0.06 + rnd() * (y1 - y0 - 0.12), z, r * 0.7, r, r); } };
+    wallG(5.1, 17.69, 7.25, 17.725, 0.32, 2.25, 150);                          // back boundary wall
+    wallG(8.89, 15.9, 8.925, 16.62, 0.25, 2.2, 55); }                          // north boundary wall, beside the toren
   const shrub = new THREE.Mesh(new THREE.IcosahedronGeometry(0.4, 1), MS.green);
   shrub.position.copy(V(7.6, 1.2, 0.35)); shrub.castShadow = true; site.add(shrub);
 
@@ -534,13 +642,14 @@ body.walking #stage canvas{touch-action:none}
   const GF = [
     [0, 5.5, 0, D, []], [0, D, 5.0, D, []],
     [5.6, 2.5, 8.0, 2.5, [[6.3, 7.3, 'o']]], [6.6, 5.5, 8.0, 5.5, [[6.75, 7.75, 'd']]],
-    [8.0, 2.5, 8.0, 13.4, [[3.0, 5.0, 'w'], [7.3, 8.7, 'w'], [9.0, 11.4, 's'], [11.6, 12.5, 'w']]],
-    [0, 5.5, 6.6, 5.5, [[0.8, 2.5, 'w']]], [3.3, 5.5, 3.3, 9.0, []], [5.3, 5.5, 5.3, 9.0, []],
-    [5.3, 7.0, 6.6, 7.0, []], [6.6, 5.5, 6.6, 7.0, [[5.7, 6.45, 'd']]], [0, 9.0, 3.3, 9.0, [[2.3, 3.1, 'd']]],
-    [0, 13.4, 8.0, 13.4, [[3.15, 4.25, 'o'], [4.55, 6.2, 's'], [6.6, 7.3, 'd']]],
-    [3.0, 13.4, 3.0, 15.8, []], [4.4, 13.4, 4.4, 15.8, []], [6.4, 13.4, 6.4, 15.8, [[14.0, 15.2, 'w']]],
+    [8.0, 2.5, 8.0, 13.4, [[3.0, 5.0, 'w'], [7.1, 8.8, 's'], [9.0, 11.2, 's'], [11.6, 12.5, 'w']]],
+    [0, 5.5, 6.6, 5.5, [[0.8, 2.5, 'w']]], [3.3, 5.5, 3.3, 9.0, [[7.9, 8.7, 'd']]], [5.3, 5.5, 5.3, 9.0, []],
+    [5.3, 7.0, 6.6, 7.0, []], [6.6, 5.5, 6.6, 7.0, [[5.7, 6.45, 'd']]], [0, 9.0, 3.3, 9.0, []],
+    [0, 13.4, 8.0, 13.4, [[3.1, 3.9, 'd'], [6.55, 7.75, 's']]],
+    [3.0, 13.4, 3.0, 15.8, []], [4.4, 13.4, 4.4, 15.8, [[13.55, 14.3, 's']]], [6.4, 13.4, 6.4, 15.8, []], [3.0, 14.6, 4.4, 14.6, []],
+    [8.0, 13.4, 8.0, 15.8, [[13.55, 15.65, 's']]], [6.4, 15.8, 8.0, 15.8, [[6.5, 7.9, 's']]],
     [2.0, 14.6, 2.0, 15.8, [[14.7, 15.45, 'd']]], [2.0, 14.6, 3.0, 14.6, []],
-    [0, 15.8, 5.0, 15.8, [[1.1, 1.9, 'd']]], [5.0, 15.8, 6.4, 15.8, [[5.15, 6.25, 's']]],
+    [0, 15.8, 5.0, 15.8, [[1.1, 1.9, 'd'], [3.3, 4.1, 'd']]], [5.0, 15.8, 6.4, 15.8, [[5.15, 6.25, 's']]],
     [5.0, 15.8, 5.0, D, [[16.3, 17.1, 'd']]],
   ];
   GF.forEach(([x0, y0, x1, y1, ops], i) => wall(gGround, MG, x0, y0, x1, y1, 0, CH, ops, i < 6 ? MG.wall : MG.inner));
@@ -548,7 +657,7 @@ body.walking #stage canvas{touch-action:none}
   box(gGround, MG.alu, 5.5, 2.4, FH - 0.2, 8.1, 2.45, FH + 0.05);     // foyer fascia
   slats(gGround, MG.oak, 5.55, 6.28, 2.425, 0, FH - 0.2); slats(gGround, MG.oak, 7.32, 8.05, 2.425, 0, FH - 0.2);
   slats(gGround, MG.oak, 6.3, 7.3, 2.425, 2.12, FH - 0.2);
-  box(gGround, MG.oak, 6.45, 13.45, 0, 7.95, 15.78, 0.04);            // back terrace deck
+  box(gGround, MG.stone, 6.45, 13.45, 0, 7.95, 15.78, 0.03);          // dapur basah floor
   // U-stair: 2 flights x 9 risers
   const R = FH / 18;
   for (let i = 0; i < 9; i++) {
@@ -556,18 +665,43 @@ body.walking #stage canvas{touch-action:none}
     box(gGround, MG.oak, 3.35, 6.5 + 0.27 * i, R * (9 + i), 4.3, 6.5 + 0.27 * (i + 1), R * (10 + i));
   }
   box(gGround, MG.slab, 3.35, 5.55, R * 9 - 0.15, 5.25, 6.5, R * 9);
+  // stair safety: black steel bar balustrade between the two flights (25 mm bars, like the gate) with a raked steel handrail,
+  // and a 1.1 m steel bar guard with handrail at the top of the stair void
+  { const ramp = y => R * 9 + (y - 6.5) / 0.27 * R;
+    for (let y = 6.53; y < 8.99; y += 0.11) box(gGround, gateFrame, 4.3125, y, 0, 4.3375, y + 0.025, ramp(y) + 0.92);
+    const run = 2.5, rise = 9 * R, L = Math.hypot(run, rise), hr = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.04, L), gateFrame);
+    hr.position.copy(V(4.325, 6.5 + run / 2, (ramp(6.5) + ramp(9.0)) / 2 + 0.94)); hr.rotation.x = Math.atan2(rise, run); hr.castShadow = true; gGround.add(hr);
+    for (let x = 4.38; x < 5.28; x += 0.11) box(gUpper, gateFrame, x, 9.01, UF, x + 0.025, 9.035, UF + 1.06);
+    box(gUpper, gateFrame, 4.3, 8.998, UF + 1.06, 5.3, 9.048, UF + 1.1); box(gUpper, gateFrame, 4.3, 9.0, UF + 0.05, 5.3, 9.045, UF + 0.09); }
+  // washbasins: floating oak vanity, white top with a vessel basin, black tap, mirror — WC, KM anak, KM utama (not the maid WC)
+  const ceramic = new THREE.MeshStandardMaterial({ color: '#f3f2ee', roughness: 0.25 }); ceramic.userData.base = 1;
+  const mirrorM = new THREE.MeshStandardMaterial({ color: '#dfe8ec', roughness: 0.12, metalness: 0.15 }); mirrorM.userData.base = 1;
+  function vanity(g, M, x0, y0, x1, y1, z, side) {             // side: the wall it backs onto ('y+' = back face at y1, ...)
+    const ax = side[0] === 'y', pos = side[1] === '+', a0 = ax ? x0 : y0, a1 = ax ? x1 : y1, ac = (a0 + a1) / 2;
+    const bx = (p, q, d0, d1, za, zb, m, sh = true) => ax ? box(g, m, p, pos ? y1 - d1 : y0 + d0, za, q, pos ? y1 - d0 : y0 + d1, zb, sh)
+                                                         : box(g, m, pos ? x1 - d1 : x0 + d0, p, za, pos ? x1 - d0 : x0 + d1, q, zb, sh);
+    const dep = ax ? y1 - y0 : x1 - x0;
+    bx(a0, a1, 0, dep, z + 0.45, z + 0.8, M.oak); bx(a0, a1, 0, dep, z + 0.8, z + 0.84, ceramic);
+    const c = ax ? V(ac, pos ? y1 - dep * 0.55 : y0 + dep * 0.55, z + 0.905) : V(pos ? x1 - dep * 0.55 : x0 + dep * 0.55, ac, z + 0.905);
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.13, 24), ceramic); b.position.copy(c); b.castShadow = true; g.add(b);
+    bx(ac - 0.015, ac + 0.015, 0.02, 0.05, z + 0.84, z + 1.1, gateFrame); bx(ac - 0.012, ac + 0.012, 0.02, 0.2, z + 1.06, z + 1.09, gateFrame);
+    bx(a0 + 0.04, a1 - 0.04, 0, 0.015, z + 1.18, z + 1.9, mirrorM, false);
+  }
+  vanity(gGround, MG, 5.85, 6.5, 6.5, 6.925, 0, 'y+');               // WC tamu
+  vanity(gUpper, MU, 6.35, 9.075, 7.05, 9.5, UF, 'y-');              // KM anak
+  vanity(gUpper, MU, 6.05, 14.675, 6.95, 15.1, UF, 'y-');            // KM utama
   // kitchen counter + island, sofa, beds (light furniture for scale)
-  box(gGround, MG.oak, 7.35, 11.5, 0, 7.92, 12.55, 0.86); box(gGround, MG.stone, 7.33, 11.48, 0.86, 7.93, 12.57, 0.9); box(gGround, MG.alu, 7.25, 12.62, 0, 7.92, 13.32, 1.8); box(gGround, MG.oak, 5.0, 11.5, 0, 6.9, 12.2, 0.86); box(gGround, MG.stone, 4.98, 11.48, 0.86, 6.92, 12.22, 0.9);
-  box(gGround, MG.oak, 5.1, 9.4, 0.7, 7.3, 10.4, 0.75); [[5.2, 9.5], [7.1, 9.5], [5.2, 10.2], [7.1, 10.2]].forEach(([x, y]) => box(gGround, MG.oak, x, y, 0, x + 0.08, y + 0.08, 0.7)); 
+
+
   box(gGround, MG.oak, 0.15, 5.65, 0, 2.15, 7.25, 0.3); box(gGround, MG.linen, 0.2, 5.7, 0.3, 2.1, 7.2, 0.5); box(gGround, MG.linen, 0.1, 13.5, 0, 1.0, 15.5, 0.45);
   for (let i = 0; i < 3; i++) box(gGround, MG.inner, 0.3 + i * 0.75, 17.05, 0, 0.95 + i * 0.75, 17.7, 0.85);
   // prayer mats + qibla arrow
   const matMat = new THREE.MeshStandardMaterial({ color: '#d9a27c', roughness: 1 });
-  [[4.95, 14.55], [5.63, 14.24]].forEach(([cx, cy]) => {
+  [[5.07, 15.0], [5.77, 14.7]].forEach(([cx, cy]) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.02, 1.2), matMat);
     m.position.copy(V(cx, cy, 0.02)); m.rotation.y = -THREE.MathUtils.degToRad(25); gGround.add(m);
   });
-  const qibla = new THREE.ArrowHelper(new THREE.Vector3(0.42, 0, -0.91).normalize(), V(5.3, 13.7, 0.3), 1.6, 0xb5562a, 0.45, 0.3);
+  const qibla = new THREE.ArrowHelper(new THREE.Vector3(0.42, 0, -0.91).normalize(), V(5.2, 14.0, 0.3), 1.4, 0xb5562a, 0.45, 0.3);
   qibla.visible = false; gGround.add(qibla);
 
   // living: L-sofa facing the TV wall, coffee table, floating oak TV cabinet, oak slat acoustic wall, 65" TV
@@ -579,15 +713,42 @@ body.walking #stage canvas{touch-action:none}
   [0.95, 1.65, 2.35].forEach(x => box(gGround, MG.oak, x - 0.004, 12.965, 0.26, x + 0.004, 12.975, 0.54, false));
   box(gGround, MG.car, 0.95, 13.22, 0.85, 2.35, 13.28, 1.68);
   box(gGround, MG.oak, 7.45, 2.6, 0, 7.92, 4.6, 0.45);   // shoe bench
+  // beverage chiller (single glass door) beside the fridge; standing fan in the maid room
+  { const cm = new THREE.MeshStandardMaterial({ color: '#f1f1ee', roughness: 0.4 }); cm.userData.base = 1;
+    box(gGround, cm, 3.92, 12.78, 0, 4.43, 13.33, 1.45); box(gGround, MG.glass, 3.97, 12.765, 0.12, 4.38, 12.78, 1.35, false);
+    box(gGround, MG.alu, 4.33, 12.74, 0.55, 4.35, 12.765, 1.0);
+    const lt = new THREE.MeshStandardMaterial({ color: '#e8f2ff', emissive: '#cfe3ff', emissiveIntensity: 0.6 }); lt.userData.base = 1;
+    [0.45, 0.8, 1.15].forEach(z => box(gGround, lt, 3.98, 12.8, z, 4.37, 13.3, z + 0.015, false));
+    box(gGround, MG.car, 2.43, 14.08, 0, 2.67, 14.32, 0.03); box(gGround, MG.car, 2.535, 14.185, 0.03, 2.565, 14.215, 1.15);
+    const fh = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.1, 22), MG.inner); fh.rotation.x = Math.PI / 2; fh.position.copy(V(2.55, 14.27, 1.25)); gGround.add(fh); }
+  // dapur kering: fridge + counter with sink on the back wall, island in line with the dining table
+  box(gGround, MG.alu, 4.5, 12.7, 0, 5.2, 13.33, 1.8);
+  box(gGround, MG.oak, 5.2, 12.75, 0, 6.45, 13.33, 0.86); box(gGround, MG.stone, 5.18, 12.73, 0.86, 6.47, 13.35, 0.9); box(gGround, MG.car, 5.55, 12.85, 0.86, 6.05, 13.2, 0.905, false);
+  box(gGround, MG.oak, 5.2, 11.2, 0, 7.0, 11.9, 0.86); box(gGround, MG.stone, 5.18, 11.18, 0.86, 7.02, 11.92, 0.9);
+  box(gGround, MG.oak, 3.4, 11.2, 0.72, 5.2, 11.9, 0.76); [[3.45, 11.25], [3.45, 11.77]].forEach(([x, y]) => box(gGround, MG.car, x, y, 0, x + 0.06, y + 0.08, 0.72));
+  [3.75, 4.3, 4.85].forEach(cx => [[10.75, 11.05, 10.75], [12.05, 12.35, 12.31]].forEach(([a, b, bk]) => {
+    box(gGround, MG.oak, cx - 0.2, a, 0.42, cx + 0.2, b, 0.46); box(gGround, MG.car, cx - 0.17, a + 0.03, 0, cx + 0.17, b - 0.03, 0.42);
+    box(gGround, MG.oak, cx - 0.2, bk, 0.46, cx + 0.2, bk + 0.04, 0.86); }));
+  // dapur basah (semi-outdoor, behind glass): counter with hob + sink along the mushalla wall, hood
+  box(gGround, MG.oak, 6.45, 13.6, 0, 7.05, 15.7, 0.86); box(gGround, MG.stone, 6.43, 13.58, 0.86, 7.07, 15.72, 0.9);
+  box(gGround, MG.car, 6.55, 13.75, 0.9, 6.95, 14.65, 0.91, false); box(gGround, MG.car, 6.5, 14.9, 0.86, 7.0, 15.45, 0.905, false);
+  box(gGround, MG.alu, 6.45, 13.7, 1.65, 7.05, 14.7, 1.95);
+  // ruang tengah: two lounge chairs + side table facing the aisle glass
+  [[5.7, 6.4], [6.9, 7.6]].forEach(([a, b]) => { box(gGround, MG.linen, a, 9.6, 0, b, 10.3, 0.42); box(gGround, MG.linen, a, 9.6, 0.42, b, 9.8, 0.78); });
+  box(gGround, MG.oak, 6.5, 9.8, 0, 6.8, 10.1, 0.5);
+  // wudu: one tap + stool; gudang shelves
+  box(gGround, MG.stone, 3.05, 13.45, 0, 4.35, 14.55, 0.02); box(gGround, MG.alu, 3.0, 14.3, 0.85, 3.14, 14.38, 0.9); box(gGround, MG.oak, 3.75, 14.2, 0, 4.3, 14.5, 0.4);
+  box(gGround, MG.inner, 3.1, 14.7, 0, 4.3, 14.95, 1.9);
   // ---------- upper floor ----------
   [[0, 5.5, 3.3, 10.2], [5.3, 5.5, 8.0, 10.2], [3.3, 9.0, 5.3, 10.2], [4.4, 10.2, 8.0, 13.4], [0, 13.4, 8.0, 15.8], [0, 15.8, 4.6, D]]
     .forEach(([x0, y0, x1, y1]) => { box(gUpper, MU.slab, x0, y0, UF - SL, x1, y1, UF - 0.02); box(gUpper, MU.oakFloor, x0, y0, UF - 0.02, x1, y1, UF); });
+  box(gUpper, MU.slab, 4.675, 14.675, UF - 0.01, 7.925, 15.725, UF + 0.006);   // KM utama: terrazzo floor
   const UFW = [
     [0, 5.5, 0, D, []], [0, D, 4.6, D, [[0.8, 3.8, 'w']]], [0, 5.5, 8.0, 5.5, [[0.5, 2.4, 's'], [6.0, 7.8, 's']]],
     [8.0, 5.5, 8.0, 15.8, [[6.2, 8.4, 'w'], [9.6, 10.8, 'w'], [11.7, 13.1, 'w']]],
     [4.6, 13.4, 4.6, D, [[13.55, 14.35, 'd'], [16.2, 17.4, 'w']]], [4.6, 15.8, 8.0, 15.8, [[5.6, 6.8, 'w']]],
     [3.3, 5.5, 3.3, 9.0, []], [5.3, 5.5, 5.3, 9.0, []], [0, 9.0, 3.3, 9.0, [[2.3, 3.1, 'd']]], [5.3, 9.0, 8.0, 9.0, [[5.4, 6.1, 'd']]],
-    [6.2, 9.0, 6.2, 11.4, [[10.4, 11.15, 'd']]], [6.2, 11.4, 8.0, 11.4, []], [0, 13.4, 8.0, 13.4, [[5.6, 6.4, 'd']]],
+    [6.2, 9.0, 6.2, 11.4, [[10.4, 11.15, 'd']]], [5.4, 11.4, 8.0, 11.4, []], [5.4, 11.4, 5.4, 13.4, [[11.55, 12.35, 'd']]], [0, 13.4, 8.0, 13.4, [[4.65, 5.35, 'D']]],
     [4.6, 14.6, 8.0, 14.6, [[5.0, 5.75, 'd']]],
   ];
   UFW.forEach(([x0, y0, x1, y1, ops], i) => wall(gUpper, MU, x0, y0, x1, y1, UF, CH, ops, i < 6 ? MU.wall : MU.inner));
@@ -627,9 +788,17 @@ body.walking #stage canvas{touch-action:none}
   });
   slats(gUpper, MU.oak, 3.32, 5.28, 4.42, UF, UF + 1.6);
 
-  box(gUpper, MU.oak, 0.15, 13.6, UF, 2.15, 15.6, UF + 0.3); box(gUpper, MU.linen, 0.2, 13.65, UF + 0.3, 2.1, 15.55, UF + 0.5); box(gUpper, MU.linen, 4.9, 11.7, UF, 6.6, 12.5, UF + 0.75); box(gUpper, MU.car, 4.47, 14.45, UF + 1.0, 4.53, 15.4, UF + 1.6);
+  box(gUpper, MU.oak, 0.15, 13.6, UF, 2.15, 15.6, UF + 0.3); box(gUpper, MU.linen, 0.2, 13.65, UF + 0.3, 2.1, 15.55, UF + 0.5); box(gUpper, MU.oak, 7.25, 11.6, UF + 0.72, 7.9, 13.2, UF + 0.76); box(gUpper, MU.car, 7.3, 11.65, UF, 7.85, 11.7, UF + 0.72); box(gUpper, MU.car, 7.3, 13.1, UF, 7.85, 13.15, UF + 0.72); box(gUpper, MU.car, 7.72, 12.05, UF + 0.8, 7.78, 12.75, UF + 1.2); box(gUpper, MU.car, 6.7, 12.15, UF, 7.1, 12.65, UF + 0.48); box(gUpper, MU.car, 6.7, 12.15, UF + 0.48, 6.75, 12.65, UF + 1.05); box(gUpper, MU.oak, 5.55, 11.47, UF, 7.1, 11.8, UF + 2.0); box(gUpper, MU.oak, 5.45, 12.5, UF + 0.3, 5.48, 13.3, UF + 2.4); box(gUpper, MU.linen, 0.2, 9.1, UF, 2.2, 9.7, UF + 0.42); box(gUpper, MU.linen, 0.2, 9.1, UF + 0.42, 2.2, 9.28, UF + 0.8); box(gUpper, MU.car, 4.47, 14.45, UF + 1.0, 4.53, 15.4, UF + 1.6);
 
   // ---------- roof ----------
+  // toren 1,000 L on the master flat roof behind the parapet (where it stood before the renovation): 0.5 m steel stand + booster pump
+  { const tm = new THREE.MeshStandardMaterial({ color: '#7d8a92', roughness: 0.6 }); tm.userData.base = 1;
+    const z0 = RZ + SL, cx = 2.41, cy = 17.16;
+    [[cx - 0.42, cy - 0.42], [cx + 0.38, cy - 0.42], [cx - 0.42, cy + 0.38], [cx + 0.38, cy + 0.38]].forEach(([x, y]) => box(gRoof, MR.steel, x, y, z0, x + 0.04, y + 0.04, z0 + 0.5));
+    box(gRoof, MR.steel, cx - 0.48, cy - 0.48, z0 + 0.46, cx + 0.48, cy + 0.48, z0 + 0.5);
+    const tk = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 1.3, 28), tm); tk.position.copy(V(cx, cy, z0 + 0.5 + 0.65)); tk.castShadow = true; gRoof.add(tk);
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.06, 20), tm); lid.position.copy(V(cx, cy, z0 + 1.83)); gRoof.add(lid);
+    box(gRoof, MR.car, 3.1, 17.48, z0, 3.42, 17.72, z0 + 0.3); }
   box(gRoof, MR.slab, 0, 5.5, RZ, 8.0, 15.8, RZ + SL); box(gRoof, MR.slab, 0, 15.8, RZ, 4.6, D, RZ + SL);
   wall(gRoof, MR, 0, D, 4.6, D, RZ + SL, 0.6); wall(gRoof, MR, 4.6, 16.6, 4.6, D, RZ + SL, 0.6);
   (function hip(x0, y0, x1, y1, z, pitch) {
@@ -658,9 +827,9 @@ body.walking #stage canvas{touch-action:none}
     s.scale.set(tw / 80 * 0.42, 0.42, 1); s.position.copy(V(x, y, z)); s.renderOrder = 10; group.add(s); return s;
   }
   const LGF = [['Carport', 2.8, 2.8], ['Foyer', 6.8, 4.0], ['Kamar tamu', 1.6, 8.2], ['WC', 5.95, 6.25], ['Ruang keluarga', 2.2, 11.3],
-    ['Makan', 6.2, 9.9], ['Dapur', 6.0, 12.6], ['Kamar ART', 1.1, 14.7], ['Tempat wudu', 3.7, 14.6], ['Mushalla', 5.4, 15.2],
-    ['Teras belakang', 7.2, 14.6], ['Laundry', 2.5, 16.8], ['Taman', 7.0, 17.2], ['Lorong', 8.5, 8.0]].map(([t, x, y]) => label(t, gGround, x, y, 1.6));
-  const LUF = [['Kamar anak 1', 1.65, 7.6], ['Kamar anak 2', 6.65, 7.6], ['Balkon', 1.65, 4.9], ['Balkon', 6.65, 4.9], ['Void', 2.2, 11.8], ['KM anak', 7.1, 10.2], ['Ruang keluarga', 6.2, 12.5],
+    ['Ruang tengah', 6.65, 10.6], ['Dapur kering', 6.0, 12.4], ['Gudang', 3.7, 15.25], ['Kamar ART', 1.1, 14.7], ['Wudu', 3.7, 14.0], ['Mushalla', 5.4, 15.2],
+    ['Dapur basah', 7.4, 14.7], ['Laundry', 2.5, 16.8], ['Taman', 7.0, 17.2], ['Lorong', 8.5, 8.0]].map(([t, x, y]) => label(t, gGround, x, y, 1.6));
+  const LUF = [['Kamar anak 1', 1.65, 7.6], ['Kamar anak 2', 6.65, 7.6], ['Balkon', 1.65, 4.9], ['Balkon', 6.65, 4.9], ['Void', 2.2, 11.8], ['KM anak', 7.1, 10.2], ['Ruang kerja', 6.3, 12.5], ['Family', 1.2, 9.5],
     ['Kamar utama', 2.3, 16.3], ['Walk-in closet', 6.3, 14.0], ['KM utama', 6.3, 15.2]].map(([t, x, y]) => label(t, gUpper, x, y, UF + 1.6));
 
   // ---------- EXISTING HOUSE (from the confirmed existing plans) ----------
@@ -681,7 +850,7 @@ body.walking #stage canvas{touch-action:none}
   box(eSite, XS.darkTile, 4.46, 0, 0, 4.95, 0.3, EH + 0.12);                              // dark tiled pillar
   const eCanopy = new THREE.Group(); eSite.add(eCanopy);
   box(eCanopy, XS.poly, 0, 0, EH, W, 2.9, EH + 0.04, false); box(eCanopy, XS.steel, 0, 0, EH - 0.1, W, 0.1, EH);
-  box(eSite, XS.car, 5.6, 0.4, 0.2, 7.4, 5.0, 1.05); box(eSite, XS.car, 5.7, 1.6, 1.55, 7.3, 3.9, 1.65); box(eSite, XS.glass, 5.7, 1.5, 1.05, 7.3, 4.0, 1.55, false);
+  car(eSite, 6.5, 0.32, 'voxy', '#1b1d20');
   // ground floor walls [x0, y0, x1, y1, openings]
   const EGF = [
     [0, 4.5, 0, D, []], [W, 4.5, W, D, []], [0, D, W, D, []],
@@ -748,7 +917,7 @@ body.walking #stage canvas{touch-action:none}
   });
 
   // ---------- ANALYSIS OVERLAYS: zoning, circulation, privacy ----------
-  const ANA = {"zones":{"pub":["#e2a546","Publik / penerimaan"],"fam":["#5f9fc4","Keluarga / bersama"],"priv":["#8b76bd","Privat / istirahat"],"svc":["#a39a52","Servis"],"wor":["#c8673f","Ibadah"],"circ":["#a8a39a","Sirkulasi"],"open":["#72ad60","Terbuka ke langit / void"]},"zoneRects":{"gf":[["pub",0,0,5.6,5.5],["pub",5.6,0,8.0,2.5],["pub",5.6,2.5,8.0,5.5],["pub",5.3,5.5,6.6,7.0],["circ",6.6,5.5,8.0,7.0],["circ",5.3,7.0,8.0,9.0],["circ",3.3,5.5,5.3,9.0],["priv",0,5.5,3.3,9.0],["fam",0,9.0,8.0,13.4],["fam",6.4,13.4,8.0,15.8],["wor",3.0,13.4,4.4,15.8],["wor",4.4,13.4,6.4,15.8],["svc",0,13.4,3.0,15.8],["svc",0,15.8,5.0,17.8],["svc",8.0,0,9.0,15.8],["open",5.0,15.8,9.0,17.8]],"uf":[["priv",0,4.3,3.3,5.5],["priv",5.3,4.3,8.0,5.5],["priv",0,5.5,3.3,9.0],["priv",5.3,5.5,8.0,9.0],["priv",6.2,9.0,8.0,11.4],["priv",0,13.4,4.6,17.8],["priv",4.6,13.4,8.0,14.6],["priv",4.6,14.6,8.0,15.8],["circ",3.3,5.5,5.3,9.0],["circ",0,9.0,6.2,10.2],["circ",4.4,10.2,6.2,11.4],["fam",4.4,11.4,8.0,13.4],["open",0,10.2,4.4,13.4],["open",4.6,15.8,9.0,17.8],["open",8.0,5.5,9.0,15.8]]},"flows":{"res":["#2f6fb0","Penghuni"],"gst":["#d08a12","Tamu"],"svc":["#7a5aa6","Servis / ART"],"wor":["#c0392b","Wudu → salat"]},"flowPaths":{"gf":[["res",[[6.55,-0.6],[6.55,0.6],[6.9,2.4],[7.3,4.6],[7.3,6.4],[6.6,8.4],[5.6,9.4],[4.8,9.25]]],["res",[[6.6,8.4],[5.0,10.6],[2.4,11.4]]],["res",[[4.1,5.25],[5.8,4.3],[7.25,4.9]]],["gst",[[6.3,-0.6],[6.3,0.6],[6.6,2.4],[6.9,4.6],[7.05,6.1],[6.75,6.1]]],["gst",[[7.05,6.1],[6.9,8.0],[4.6,9.6],[2.7,9.2],[2.0,8.1]]],["svc",[[6.1,-0.6],[6.1,0.35],[8.5,1.1],[8.5,14.6],[7.2,14.6],[6.95,13.5],[6.6,12.6]]],["svc",[[8.5,14.6],[8.5,16.8],[5.6,16.75],[3.2,16.75],[1.5,16.4],[1.5,15.0]]],["wor",[[2.6,11.9],[3.7,12.9],[3.7,14.6]]],["wor",[[3.7,14.6],[3.85,13.1],[5.35,13.1],[5.35,14.6]]]],"uf":[["res",[[3.8,9.15],[3.2,9.6],[2.7,9.1],[2.0,8.0]]],["res",[[3.8,9.15],[5.4,9.6],[5.75,9.1],[6.6,8.0]]],["res",[[5.4,9.6],[5.6,10.8],[6.25,10.8],[7.1,10.4]]],["res",[[5.6,10.8],[5.6,12.4],[6.0,13.3],[6.0,14.0],[4.7,13.95],[2.4,14.9]]],["res",[[6.0,14.0],[5.4,14.5],[5.4,15.2]]]]},"stair":[[4.8,9.25,0.25],[4.8,6.6,1.95],[4.3,6.0,1.95],[3.8,6.6,1.95],[3.8,9.15,3.65]],"priv":{"1":["#f0c76a","Publik"],"2":["#9fcbb4","Semi-publik (tamu)"],"3":["#6aa0c0","Semi-privat (keluarga, servis)"],"4":["#4b5a8c","Privat"]},"privRects":{"gf":[[1,0,0,5.6,5.5],[1,5.6,0,8.0,2.5],[1,5.6,2.5,8.0,5.5],[2,5.3,5.5,6.6,7.0],[2,6.6,5.5,8.0,7.0],[2,5.3,7.0,8.0,9.0],[2,0,9.0,4.4,13.4],[2,4.4,9.0,8.0,11.4],[3,3.3,5.5,5.3,9.0],[3,4.4,11.4,8.0,13.4],[3,3.0,13.4,6.4,15.8],[3,6.4,13.4,8.0,15.8],[3,0,15.8,5.0,17.8],[3,8.0,0,9.0,15.8],[3,5.0,15.8,9.0,17.8],[4,0,5.5,3.3,9.0],[4,0,13.4,3.0,15.8]],"uf":[[3,0,4.3,3.3,5.5],[3,5.3,4.3,8.0,5.5],[3,3.3,5.5,5.3,9.0],[3,0,9.0,6.2,10.2],[3,4.4,10.2,6.2,11.4],[3,4.4,11.4,8.0,13.4],[4,0,5.5,3.3,9.0],[4,5.3,5.5,8.0,9.0],[4,6.2,9.0,8.0,11.4],[4,0,13.4,4.6,17.8],[4,4.6,13.4,8.0,15.8]]},"buffers":{"gf":[[3.3,5.5,5.3,9.0],[5.3,5.5,6.6,7.0]],"uf":[[3.3,5.5,5.3,9.0],[4.6,13.4,8.0,14.6],[6.2,9.0,8.0,11.4]]},"noise":{"gf":[[2.8,0.9,"Jalan & mobil"],[1.65,12.95,"TV"],[7.6,12.1,"Dapur"],[0.6,17.35,"Mesin cuci"]],"uf":[[4.5,1.5,"Hujan di kanopi"],[1.2,10.7,"Suara R. keluarga lewat void"]]},"sight":{"line":[6.9,2.6,6.9,10.3],"screen":[6.3,8.85,7.95,8.85]},"overlook":[[8.0,7.3],[8.0,12.4]],"legend":{"zone":"<ul class=\"chips\"><li><i style=\"background:#e2a546\"></i>Publik / penerimaan</li><li><i style=\"background:#5f9fc4\"></i>Keluarga / bersama</li><li><i style=\"background:#8b76bd\"></i>Privat / istirahat</li><li><i style=\"background:#a39a52\"></i>Servis</li><li><i style=\"background:#c8673f\"></i>Ibadah</li><li><i style=\"background:#a8a39a\"></i>Sirkulasi</li><li><i style=\"background:#72ad60\"></i>Terbuka ke langit / void</li></ul>","circ":"<ul class=\"chips\"><li><i style=\"background:#2f6fb0\"></i>Penghuni</li><li><i style=\"background:#d08a12\"></i>Tamu</li><li><i style=\"background:#7a5aa6\"></i>Servis / ART</li><li><i style=\"background:#c0392b\"></i>Wudu → salat</li></ul>","priv":"<ul class=\"chips\"><li><i style=\"background:#f0c76a\"></i>Publik</li><li><i style=\"background:#9fcbb4\"></i>Semi-publik (tamu)</li><li><i style=\"background:#6aa0c0\"></i>Semi-privat (keluarga, servis)</li><li><i style=\"background:#4b5a8c\"></i>Privat</li><li><i style=\"background:#c0392b\"></i>Sumber bising</li><li><i style=\"background:#8b7fc0\"></i>Penyangga akustik</li></ul>"}};
+  const ANA = {"zones":{"pub":["#e2a546","Publik / penerimaan"],"fam":["#5f9fc4","Keluarga / bersama"],"priv":["#8b76bd","Privat / istirahat"],"svc":["#a39a52","Servis"],"wor":["#c8673f","Ibadah"],"circ":["#a8a39a","Sirkulasi"],"open":["#72ad60","Terbuka ke langit / void"]},"zoneRects":{"gf":[["pub",0,0,5.6,5.5],["pub",5.6,0,8.0,2.5],["pub",5.6,2.5,8.0,5.5],["pub",5.3,5.5,6.6,7.0],["circ",6.6,5.5,8.0,7.0],["circ",5.3,7.0,8.0,9.0],["circ",3.3,5.5,5.3,9.0],["priv",0,5.5,3.3,9.0],["fam",0,9.0,8.0,13.4],["svc",6.4,13.4,8.0,15.8],["wor",3.0,13.4,4.4,14.6],["svc",3.0,14.6,4.4,15.8],["wor",4.4,13.4,6.4,15.8],["svc",0,13.4,3.0,15.8],["svc",0,15.8,5.0,17.8],["svc",8.0,0,9.0,15.8],["open",5.0,15.8,9.0,17.8]],"uf":[["priv",0,4.3,3.3,5.5],["priv",5.3,4.3,8.0,5.5],["priv",0,5.5,3.3,9.0],["priv",5.3,5.5,8.0,9.0],["priv",6.2,9.0,8.0,11.4],["priv",0,13.4,4.6,17.8],["priv",4.6,13.4,8.0,14.6],["priv",4.6,14.6,8.0,15.8],["circ",3.3,5.5,5.3,9.0],["fam",0,9.0,3.3,10.2],["circ",3.3,9.0,6.2,10.2],["circ",4.4,10.2,6.2,11.4],["circ",4.4,11.4,5.4,13.4],["priv",5.4,11.4,8.0,13.4],["open",0,10.2,4.4,13.4],["open",4.6,15.8,9.0,17.8],["open",8.0,5.5,9.0,15.8]]},"flows":{"res":["#2f6fb0","Penghuni"],"gst":["#d08a12","Tamu"],"svc":["#7a5aa6","Servis / ART"],"wor":["#c0392b","Wudu → salat"]},"flowPaths":{"gf":[["res",[[6.55,-0.6],[6.55,0.6],[6.9,2.4],[7.3,4.6],[7.3,6.4],[6.6,8.4],[5.6,9.4],[4.8,9.25]]],["res",[[6.6,8.4],[5.0,10.6],[2.4,11.4]]],["res",[[4.1,5.25],[5.8,4.3],[7.25,4.9]]],["gst",[[6.3,-0.6],[6.3,0.6],[6.6,2.4],[6.9,4.6],[7.05,6.1],[6.75,6.1]]],["gst",[[7.05,6.1],[6.9,8.0],[5.5,9.45],[3.85,9.3],[3.85,8.3],[2.9,8.3],[2.0,7.9]]],["svc",[[6.1,-0.6],[6.1,0.35],[8.5,1.1],[8.5,14.6],[7.2,14.6],[6.95,13.5],[6.6,12.6]]],["svc",[[8.5,14.6],[8.5,16.8],[5.6,16.75],[3.2,16.75],[1.5,16.4],[1.5,15.0]]],["wor",[[2.6,11.9],[3.5,12.9],[3.5,13.95]]],["wor",[[3.5,13.95],[4.9,13.95],[5.35,14.5]]]],"uf":[["res",[[3.8,9.15],[3.2,9.6],[2.7,9.1],[2.0,8.0]]],["res",[[3.8,9.15],[5.4,9.6],[5.75,9.1],[6.6,8.0]]],["res",[[5.4,9.6],[5.6,10.8],[6.25,10.8],[7.1,10.4]]],["res",[[5.6,10.8],[4.9,11.4],[4.9,13.2],[5.0,13.9],[4.7,13.95],[2.4,14.9]]],["res",[[5.0,13.9],[5.4,14.5],[5.4,15.2]]],["res",[[4.9,11.95],[5.9,11.95],[6.5,12.4]]]]},"stair":[[4.8,9.25,0.25],[4.8,6.6,1.95],[4.3,6.0,1.95],[3.8,6.6,1.95],[3.8,9.15,3.65]],"priv":{"1":["#f0c76a","Publik"],"2":["#9fcbb4","Semi-publik (tamu)"],"3":["#6aa0c0","Semi-privat (keluarga, servis)"],"4":["#4b5a8c","Privat"]},"privRects":{"gf":[[1,0,0,5.6,5.5],[1,5.6,0,8.0,2.5],[1,5.6,2.5,8.0,5.5],[2,5.3,5.5,6.6,7.0],[2,6.6,5.5,8.0,7.0],[2,5.3,7.0,8.0,9.0],[2,0,9.0,4.4,13.4],[2,4.4,9.0,8.0,11.4],[3,3.3,5.5,5.3,9.0],[3,4.4,11.4,8.0,13.4],[3,3.0,13.4,6.4,15.8],[3,6.4,13.4,8.0,15.8],[3,0,15.8,5.0,17.8],[3,8.0,0,9.0,15.8],[3,5.0,15.8,9.0,17.8],[4,0,5.5,3.3,9.0],[4,0,13.4,3.0,15.8]],"uf":[[3,0,4.3,3.3,5.5],[3,5.3,4.3,8.0,5.5],[3,3.3,5.5,5.3,9.0],[3,0,9.0,6.2,10.2],[3,4.4,10.2,6.2,11.4],[3,4.4,11.4,5.4,13.4],[4,5.4,11.4,8.0,13.4],[4,0,5.5,3.3,9.0],[4,5.3,5.5,8.0,9.0],[4,6.2,9.0,8.0,11.4],[4,0,13.4,4.6,17.8],[4,4.6,13.4,8.0,15.8]]},"buffers":{"gf":[[3.3,5.5,5.3,9.0],[5.3,5.5,6.6,7.0]],"uf":[[3.3,5.5,5.3,9.0],[4.6,13.4,8.0,14.6],[6.2,9.0,8.0,11.4]]},"noise":{"gf":[[2.8,0.9,"Jalan & mobil"],[1.65,12.95,"TV"],[7.45,14.3,"Dapur basah"],[0.6,17.35,"Mesin cuci"]],"uf":[[4.5,1.5,"Hujan di kanopi"],[1.2,10.7,"Suara R. keluarga lewat void"]]},"sight":{"line":[7.25,5.6,7.25,10.3],"screen":[6.3,8.85,7.95,8.85]},"overlook":[[8.0,7.3],[8.0,12.4]],"legend":{"zone":"<ul class=\"chips\"><li><i style=\"background:#e2a546\"></i>Publik / penerimaan</li><li><i style=\"background:#5f9fc4\"></i>Keluarga / bersama</li><li><i style=\"background:#8b76bd\"></i>Privat / istirahat</li><li><i style=\"background:#a39a52\"></i>Servis</li><li><i style=\"background:#c8673f\"></i>Ibadah</li><li><i style=\"background:#a8a39a\"></i>Sirkulasi</li><li><i style=\"background:#72ad60\"></i>Terbuka ke langit / void</li></ul>","circ":"<ul class=\"chips\"><li><i style=\"background:#2f6fb0\"></i>Penghuni</li><li><i style=\"background:#d08a12\"></i>Tamu</li><li><i style=\"background:#7a5aa6\"></i>Servis / ART</li><li><i style=\"background:#c0392b\"></i>Wudu → salat</li></ul>","priv":"<ul class=\"chips\"><li><i style=\"background:#f0c76a\"></i>Publik</li><li><i style=\"background:#9fcbb4\"></i>Semi-publik (tamu)</li><li><i style=\"background:#6aa0c0\"></i>Semi-privat (keluarga, servis)</li><li><i style=\"background:#4b5a8c\"></i>Privat</li><li><i style=\"background:#c0392b\"></i>Sumber bising</li><li><i style=\"background:#8b7fc0\"></i>Penyangga akustik</li></ul>"}};
   const ovItems = [], circFlows = [], pulses = [], noiseLabels = [];
   function ovMat(color, kind, base, floor) {
     const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
@@ -799,7 +968,7 @@ body.walking #stage canvas{touch-action:none}
   flowPath(ANA.stair, ANA.flows.res[0], ovG, 'gf');
 
   // ---------- BUILDING SERVICES (MEP): AC, water, hot water, network ----------
-  const MEP = {"idu":[["uf",0.08,14.2,0.3,15.0,"AC 1 PK",false],["uf",0.6,8.7,1.4,8.92,"AC ¾ PK",false],["uf",6.8,8.7,7.6,8.92,"AC ½ PK",false],["gf",0.5,8.7,1.3,8.92,"AC ¾ PK",false],["gf",0.3,13.48,1.1,13.7,"AC ½ PK",true]],"odu":[["uf",3.2,16.75,4.1,17.35,"ODU utama · dak atap",false],["uf",3.4,4.95,4.2,5.38,"ODU 1",false],["uf",4.4,4.95,5.2,5.38,"ODU 2",false],["gf",2.55,5.05,3.25,5.42,"ODU tamu · t 2.4 m",false],["gf",5.08,16.0,5.48,16.8,"ODU ART (ops.)",true]],"refrig":[["uf",[[0.3,14.6],[0.6,14.6],[0.6,16.5],[3.65,16.5],[3.65,16.75]],false],["uf",[[1.0,8.7],[1.0,8.55],[3.05,8.55],[3.05,5.2],[3.4,5.2]],false],["uf",[[7.2,8.7],[7.2,8.55],[5.5,8.55],[5.5,5.2],[5.2,5.2]],false],["gf",[[0.9,8.7],[0.9,8.55],[2.9,8.55],[2.9,5.42]],false],["gf",[[0.7,13.7],[0.7,16.1],[5.08,16.1]],true]],"cold":{"gf":[[[0.35,0.15],[0.35,0.5]],[[1.3,1.6],[0.35,1.8]],[[0.35,2.25],[0.35,5.3],[8.25,5.3],[8.25,16.05],[5.0,16.05],[0.7,16.9]],[[6.3,5.3],[6.3,6.3]],[[8.25,11.9],[6.9,11.9]],[[8.25,13.55],[3.25,13.55],[3.25,15.3],[2.6,15.3]],[[8.25,10.6],[8.15,10.6]]],"uf":[[[8.15,10.6],[7.4,10.6]],[[7.9,10.6],[7.9,15.25],[5.0,15.25]],[[8.15,10.6],[8.15,10.2],[7.6,10.2]]]},"hot":{"gf":[[[7.9,11.3],[7.9,6.8],[6.45,6.8]]],"uf":[[[7.75,11.25],[7.75,10.35],[7.3,10.35]],[[7.75,11.25],[7.75,15.05],[5.1,15.05]]]},"risers":[[8.15,10.6],[7.9,11.3]],"tank":[0.3,0.45,2.4,1.6],"septic":[5.8,0.35,6.9,1.45],"pump":[0.33,2.02],"solar":[6.3,9.6,8.4,12.0],"tvs":[["gf",0.95,13.27,2.35,13.33],["uf",4.48,14.45,4.54,15.4]],"nodes":[["gf",6.95,8.35,"A"],["uf",5.0,11.9,"B"],["gf",6.3,13.2,"C"]],"niche":[5.45,8.25],"cat6":{"gf":[[1.65,13.2,"TV"],[6.3,13.2,"Node C"],[5.75,2.6,"CCTV"],[8.05,3.0,"CCTV"]],"uf":[[5.0,11.9,"Node B"],[4.45,14.9,"TV"],[2.9,8.75,"Desk"],[5.55,8.75,"Desk"]]},"netRiser":[5.38,8.25],"wifiR":6.0,"labels":{"tank":"Tandon bawah 2.000 L","septic":"Septic biofil","solar":"Pemanas surya 150 L (di atap)","pump":"Pompa","fridge":"Kulkas","washer":"Mesin cuci","tv":"TV","panel":"Panel + ONT","node":"Wi-Fi"},"legend":"<ul class=\"chips\"><li><i style=\"background:#1c6fd1\"></i>Air bersih dingin</li><li><i style=\"background:#d63c2f\"></i>Air panas</li><li><i style=\"background:#0b7285\"></i>Pipa refrigeran</li><li><i style=\"background:#7a3fb5\"></i>Kabel data Cat6</li><li><i style=\"background:#ffffff\"></i>AC unit dalam</li><li><i style=\"background:#9aa5ad\"></i>AC unit luar</li><li><i style=\"background:#7a3fb555\"></i>Node Wi-Fi mesh</li></ul>"};
+  const MEP = {"idu": [["uf", 0.08, 14.2, 0.3, 15.0, "AC 1 PK", false], ["uf", 0.6, 8.7, 1.4, 8.92, "AC ½ PK", true], ["uf", 6.8, 8.7, 7.6, 8.92, "AC ½ PK", true], ["gf", 0.5, 8.7, 1.3, 8.92, "AC ½ PK", true], ["gf", 1.7, 9.08, 2.9, 9.32, "AC 1½ PK", false], ["uf", 5.85, 13.18, 6.65, 13.4, "AC ½ PK", false]], "odu": [["uf", 3.2, 16.75, 4.1, 17.35, "ODU utama", false], ["uf", 3.4, 4.95, 4.2, 5.38, "ODU 1", true], ["uf", 4.4, 4.95, 5.2, 5.38, "ODU 2", true], ["gf", 2.55, 5.05, 3.25, 5.42, "ODU tamu", true], ["gf", 1.35, 5.05, 2.4, 5.42, "ODU R. keluarga 1½ PK", false], ["uf", 1.0, 16.75, 1.9, 17.35, "ODU R. kerja", false]], "refrig": [["uf", [[0.3, 14.6], [0.6, 14.6], [0.6, 16.5], [3.65, 16.5], [3.65, 16.75]], false], ["uf", [[1.0, 8.7], [1.0, 8.55], [3.05, 8.55], [3.05, 5.2], [3.4, 5.2]], true], ["uf", [[7.2, 8.7], [7.2, 8.55], [5.5, 8.55], [5.5, 5.2], [5.2, 5.2]], true], ["gf", [[0.9, 8.7], [0.9, 8.55], [2.9, 8.55], [2.9, 5.42]], true], ["gf", [[2.3, 9.08], [2.3, 8.35], [1.85, 8.35], [1.85, 5.42]], false], ["uf", [[6.25, 13.18], [6.25, 13.62], [4.75, 13.62], [4.75, 16.45], [1.45, 16.45], [1.45, 16.75]], false]], "cold": {"gf": [[[0.35, 0.15], [0.35, 0.3], [8.4, 0.3], [8.4, 17.45], [7.82, 17.45]], [[7.38, 17.45], [5.1, 17.45], [5.1, 17.6], [4.75, 17.6]], [[4.75, 17.6], [4.75, 16.05], [8.25, 16.05], [8.25, 5.3], [0.6, 5.3]], [[4.75, 16.4], [0.7, 16.9]], [[6.3, 5.3], [6.3, 6.3]], [[8.25, 15.2], [6.9, 15.2]], [[5.8, 13.55], [5.8, 13.1]], [[8.25, 13.55], [3.25, 13.55], [3.25, 15.3], [2.6, 15.3]], [[8.25, 10.6], [8.15, 10.6]]], "uf": [[[8.15, 10.6], [7.4, 10.6]], [[7.9, 10.6], [7.9, 15.25], [5.0, 15.25]], [[8.15, 10.6], [8.15, 10.2], [7.6, 10.2]], [[4.75, 17.6], [3.6, 17.62], [3.25, 17.62], [2.87, 17.62]]]}, "hot": {"gf": [], "uf": [[[7.75, 15.1], [7.45, 15.1]], [[7.75, 15.1], [7.75, 14.78], [6.5, 14.78], [6.5, 14.9]], [[7.75, 10.95], [7.45, 10.95]], [[7.75, 10.95], [7.75, 10.02], [6.7, 10.02], [6.7, 9.5]]]}, "risers": [[8.15, 10.6], [4.75, 17.6]], "tank": [1.95, 16.7, 2.87, 17.62], "septic": [0.5, 1.2, 2.7, 2.7], "pump": [7.6, 17.45], "wh": [[7.75, 15.1], [7.75, 10.95]], "boost": [3.25, 17.62], "tankRiser": [4.75, 17.6], "tvs": [["gf", 0.95, 13.27, 2.35, 13.33], ["uf", 4.48, 14.45, 4.54, 15.4]], "nodes": [["gf", 6.95, 8.35, "A"], ["uf", 5.0, 11.9, "B"], ["gf", 6.3, 13.2, "C"]], "niche": [5.45, 8.25], "cat6": {"gf": [[1.65, 13.2, "TV"], [6.3, 13.2, "Node C"], [5.75, 2.6, "CCTV"], [8.05, 3.0, "CCTV"]], "uf": [[5.0, 11.9, "Node B"], [4.45, 14.9, "TV"], [2.9, 8.75, "Desk"], [5.55, 8.75, "Desk"], [7.85, 12.55, "Study"]]}, "netRiser": [5.38, 8.25], "wifiR": 6.0, "labels": {"tank": "Toren 1.000 L (atap)", "septic": "Septic (lama)", "wh": "Water heater 30 L", "pump": "Jet pump", "boost": "Booster", "fridge": "Kulkas", "washer": "Mesin cuci", "tv": "TV", "panel": "Panel + ONT", "node": "Wi-Fi"}, "legend": "<ul class=\"chips\"><li><i style=\"background:#1c6fd1\"></i>Air bersih dingin</li><li><i style=\"background:#d63c2f\"></i>Air panas</li><li><i style=\"background:#0b7285\"></i>Pipa refrigeran</li><li><i style=\"background:#7a3fb5\"></i>Kabel data Cat6</li><li><i style=\"background:#ffffff\"></i>AC unit dalam</li><li><i style=\"background:#9aa5ad\"></i>AC unit luar</li><li><i style=\"background:#7a3fb555\"></i>Node Wi-Fi mesh</li></ul>"};
   const mepG = new THREE.Group(), mepU = new THREE.Group(); gGround.add(mepG); gUpper.add(mepU);
   const mepLabels = [];
   const MG_ = { gf: mepG, uf: mepU };
@@ -823,19 +992,17 @@ body.walking #stage canvas{touch-action:none}
     const roof = fl === 'uf' && ly > 16; p3.push([lx, ly, fl === 'gf' ? 2.5 : (roof ? RZ + SL + 0.3 : UF + 0.35)]);
     if (roof) p3.splice(p3.length - 1, 0, [lx, ly, zc]);
     tube(fl, p3, '#0b7285', 0.04); });
-  // cold / hot water, risers, solar heater, tanks
+  // cold / hot water, risers, roof toren, water heaters
   for (const fl of ['gf', 'uf']) { const z = base(fl) + 0.18;
-    MEP.cold[fl].forEach(pts => tube(fl, pts.map(([x, y]) => [x, y, z]), '#1c6fd1', 0.045));
+    MEP.cold[fl].forEach(pts => { const roof = fl === 'uf' && pts[0][0] === MEP.tankRiser[0] && pts[0][1] === MEP.tankRiser[1];
+      tube(fl, pts.map(([x, y]) => [x, y, roof ? RZ + SL + 0.2 : z]), '#1c6fd1', 0.045); });
     MEP.hot[fl].forEach(pts => tube(fl, pts.map(([x, y]) => [x, y, z + 0.1]), '#d63c2f', 0.045)); }
-  tube('gf', [[8.15, 10.6, 0.18], [8.15, 10.6, RZ + SL + 0.5]], '#1c6fd1', 0.05);
-  tube('gf', [[7.85, 11.28, RZ + SL + 0.5], [7.85, 11.28, 0.28]], '#d63c2f', 0.05);
-  { const [sx0, sy0, sx1, sy1] = MEP.solar, zz = RZ + SL + 0.75;
-    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, sy1 - sy0 - 0.2), mm('#1f3f66', 1, 'uf'));
-    panel.position.copy(V(7.55, (sy0 + sy1) / 2, zz)); panel.rotation.z = THREE.MathUtils.degToRad(-30); mepU.add(panel);
-    const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, sy1 - sy0 - 0.3, 18), mm('#e9ecef', 1, 'uf'));
-    tank.rotation.x = Math.PI / 2; tank.position.copy(V(6.85, (sy0 + sy1) / 2, zz + 0.45)); mepU.add(tank);
-    mLabel(MEP.labels.solar, 'uf', 7.0, (sy0 + sy1) / 2, zz + 1.2); }
-  { const [x0, y0, x1, y1] = MEP.tank; box(mepG, mm('#4d8fe0', 0.85, 'gf'), x0, y0, 0.0, x1, y1, 0.07); mLabel(MEP.labels.tank, 'gf', (x0 + x1) / 2, (y0 + y1) / 2, 0.6); }
+  tube('gf', [[MEP.tankRiser[0], MEP.tankRiser[1], 0.18], [MEP.tankRiser[0], MEP.tankRiser[1], RZ + SL + 0.2]], '#1c6fd1', 0.05);   // R3 to the roof toren
+  MEP.wh.forEach(([x, y]) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.55, 18), mm('#ffffff', 1, 'uf'));
+    c.position.copy(V(x, y, UF + 2.0)); MG_.uf.add(c); mLabel(MEP.labels.wh, 'uf', x - 0.35, y, UF + 2.6); });
+  { const [x0, y0, x1, y1] = MEP.tank, r = (x1 - x0) / 2 + 0.03, t = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1.34, 28), mm('#4d8fe0', 0.55, 'uf'));
+    t.position.copy(V((x0 + x1) / 2, (y0 + y1) / 2, RZ + SL + 1.15)); mepU.add(t); mLabel(MEP.labels.tank, 'uf', (x0 + x1) / 2, (y0 + y1) / 2, RZ + SL + 2.2);
+    box(mepU, mm('#5e666c', 1, 'uf'), MEP.boost[0] - 0.17, MEP.boost[1] - 0.14, RZ + SL, MEP.boost[0] + 0.17, MEP.boost[1] + 0.14, RZ + SL + 0.32); }
   { const [x0, y0, x1, y1] = MEP.septic; box(mepG, mm('#8a5a3c', 0.85, 'gf'), x0, y0, 0.0, x1, y1, 0.07); mLabel(MEP.labels.septic, 'gf', (x0 + x1) / 2, (y0 + y1) / 2, 0.6); }
   box(mepG, mm('#5e666c', 1, 'gf'), MEP.pump[0] - 0.2, MEP.pump[1] - 0.22, 0, MEP.pump[0] + 0.22, MEP.pump[1] + 0.22, 0.45); mLabel(MEP.labels.pump, 'gf', MEP.pump[0] + 0.3, MEP.pump[1], 0.95);
   mLabel(MEP.labels.fridge, 'gf', 7.6, 12.95, 2.2); mLabel(MEP.labels.washer, 'gf', 0.62, 17.37, 1.35);
@@ -990,8 +1157,8 @@ body.walking #stage canvas{touch-action:none}
 
 
   // ---------- walk inside: eye-level POV, drag to look 360°, tap the floor rings to move ----------
-  const WT = {"stops": [{"id": "street", "x": 4.9, "y": -4.2, "f": "gf", "yaw": 0.0, "name": "Jalan", "text": "Pagar mobil besi hitam, pintu orang kayu oak, dinding batu nama, dan roster putih di depan lorong. Ketuk pagar untuk membukanya, atau pintu untuk masuk."}, {"id": "carport", "x": 5.3, "y": 5.1, "f": "gf", "yaw": 2.6387, "name": "Carport", "text": "5.6 × 5.5 m untuk dua MPV di bawah kanopi baja hitam dengan plafon kisi motif oak. Anda berdiri di muka rumah, menghadap mobil dan pagar."}, {"id": "entry", "x": 6.45, "y": 0.85, "f": "gf", "yaw": -0.1974, "name": "Taman depan", "text": "Taman kecil dengan batu pijakan dari pintu orang ke pintu utama. Roster di kanan membiarkan angin masuk ke lorong."}, {"id": "foyer", "x": 6.9, "y": 3.3, "f": "gf", "yaw": 0.0997, "name": "Foyer", "text": "Teras beratap 2.4 × 3.0 m, terbuka ke carport, dengan bangku sepatu. Pintu utama di depan menuju hall."}, {"id": "hall", "x": 7.25, "y": 7.7, "f": "gf", "yaw": 1.4219, "name": "Hall", "text": "Tangga U, panel listrik dan niche jaringan, serta jalan menuju ruang keluarga dan ruang makan."}, {"id": "guest", "x": 2.45, "y": 8.35, "f": "gf", "yaw": 2.7611, "name": "Kamar tamu", "text": "3.3 × 3.5 m di bagian depan rumah, pintu 0.8 m dari hall dan AC sendiri."}, {"id": "living", "x": 2.05, "y": 10.3, "f": "gf", "yaw": 0.1194, "name": "Ruang keluarga", "text": "4.4 × 4.4 m di bawah void dua lantai. Anda di sofa L menghadap dinding TV: panel kisi oak dan kabinet TV gantung. Lihat ke atas untuk galeri atas."}, {"id": "dining", "x": 4.6, "y": 10.8, "f": "gf", "yaw": -1.1479, "name": "Makan + dapur", "text": "Dapur terbuka dengan island, kompor di bawah jendela, dan kulkas di sudut. Pintu geser 2.4 m terbuka ke lorong."}, {"id": "aisle", "x": 8.5, "y": 9.4, "f": "gf", "yaw": 0.0, "name": "Lorong utara", "text": "Lebar 1 m dan terbuka ke langit. Angin masuk lewat roster di jalan dan mengalir sampai taman belakang."}, {"id": "terrace", "x": 7.2, "y": 14.3, "f": "gf", "yaw": 0.3367, "name": "Teras belakang", "text": "Dek beratap di antara dapur, lorong, mushalla, dan taman."}, {"id": "mushalla", "x": 4.85, "y": 13.75, "f": "gf", "yaw": -0.4324, "name": "Mushalla", "text": "2.0 × 2.4 m untuk dua orang, menghadap kiblat (295°, panah di lantai), dengan pintu kaca ke taman belakang."}, {"id": "backyard", "x": 6.4, "y": 16.85, "f": "gf", "yaw": -2.8501, "name": "Taman belakang", "text": "Terbuka ke langit dengan satu pohon peneduh. Menoleh ke rumah: pintu kaca mushalla, laundry, dan jendela kamar utama di atas."}, {"id": "laundry", "x": 4.0, "y": 16.75, "f": "gf", "yaw": 1.4711, "name": "Laundry", "text": "5.0 × 2.0 m dengan mesin cuci, pengering, bak, dan meja servis. Pintunya terbuka ke taman belakang."}, {"id": "maid", "x": 1.65, "y": 14.0, "f": "gf", "yaw": 1.0304, "name": "Kamar ART", "text": "Tempat tidur, lemari, dan WC kecil, masuk dari laundry."}, {"id": "gallery", "x": 5.0, "y": 9.75, "f": "uf", "yaw": 1.068, "name": "Galeri atas", "text": "Tangga tiba di sini di samping void. Railing kaca di atas ruang keluarga; kamar anak di belakang Anda."}, {"id": "kid1", "x": 2.15, "y": 8.5, "f": "uf", "yaw": 2.9442, "name": "Kamar anak 1", "text": "3.3 × 3.5 m. Pintu geser kaca terbuka ke balkon 1.2 m sendiri."}, {"id": "bal1", "x": 2.45, "y": 5.05, "f": "uf", "yaw": 2.8501, "name": "Balkon 1", "text": "Boks berbingkai 3.3 × 1.2 m di atas kanopi carport: sirip kayu oak putar di kanan Anda, pot tanaman dan railing kaca di depan, pemandangan ke jalan. Unit luar AC tersembunyi di balik kisi oak di kiri."}, {"id": "kid2", "x": 6.15, "y": 8.45, "f": "uf", "yaw": -2.9442, "name": "Kamar anak 2", "text": "2.7 × 3.5 m dengan balkon di depan dan jendela samping ke lorong."}, {"id": "bal2", "x": 5.95, "y": 5.05, "f": "uf", "yaw": -2.8501, "name": "Balkon 2", "text": "Boks berbingkai 2.7 × 1.2 m di atas foyer: pot tanaman di depan, sirip kayu oak putar di kiri Anda."}, {"id": "family", "x": 6.45, "y": 13.05, "f": "uf", "yaw": 1.7682, "name": "Ruang keluarga atas", "text": "Sofa dan meja belajar di samping void, di antara kamar anak dan kamar utama."}, {"id": "master", "x": 3.3, "y": 14.15, "f": "uf", "yaw": 0.3367, "name": "Kamar utama", "text": "4.6 × 4.4 m di belakang yang tenang: jendela barat dengan sirip oak, walk-in closet dan KM dalam di belakang Anda."}], "up": "Naik ↑", "down": "Turun ↓", "opening_gate": "Membuka pagar…", "opening_door": "Membuka pintu orang…"};
-  const EYE = 1.6, PITCH = { bal1: -0.3, bal2: -0.3, carport: -0.06, living: 0.15, street: 0.04 };
+  const WT = {"stops": [{"id": "street", "x": 4.9, "y": -4.2, "f": "gf", "yaw": 0.0, "name": "Jalan", "text": "Pagar mobil expanded metal hitam, pintu orang kayu oak, dinding batu nama, dan roster putih di depan lorong. Ketuk pagar untuk membukanya, atau pintu untuk masuk."}, {"id": "carport", "x": 5.3, "y": 5.1, "f": "gf", "yaw": 2.6387, "name": "Carport", "text": "5.6 × 5.5 m untuk dua MPV di bawah kanopi baja hitam dengan plafon kisi motif oak. Anda berdiri di muka rumah, menghadap mobil dan pagar."}, {"id": "entry", "x": 6.45, "y": 0.85, "f": "gf", "yaw": -0.1974, "name": "Taman depan", "text": "Taman kecil dengan batu pijakan dari pintu orang ke pintu utama. Roster di kanan membiarkan angin masuk ke lorong."}, {"id": "foyer", "x": 6.9, "y": 3.3, "f": "gf", "yaw": 0.0997, "name": "Foyer", "text": "Teras beratap 2.4 × 3.0 m, terbuka ke carport, dengan bangku sepatu. Pintu utama di depan menuju hall."}, {"id": "hall", "x": 7.25, "y": 7.7, "f": "gf", "yaw": 1.4219, "name": "Hall", "text": "Tangga U, panel listrik dan niche jaringan, serta jalan menuju ruang keluarga dan ruang makan."}, {"id": "guest", "x": 2.45, "y": 8.35, "f": "gf", "yaw": 2.7611, "name": "Kamar tamu", "text": "3.3 × 3.5 m di bagian depan rumah. Pintunya sekarang di bawah tangga, sehingga dinding ruang keluarga tetap utuh di belakang sofa L."}, {"id": "living", "x": 2.05, "y": 10.3, "f": "gf", "yaw": 0.1194, "name": "Ruang keluarga", "text": "4.4 × 4.4 m di bawah void dua lantai. Anda di sofa L menghadap dinding TV: panel kisi oak dan kabinet TV gantung. Lihat ke atas untuk galeri atas."}, {"id": "dining", "x": 4.3, "y": 10.15, "f": "gf", "yaw": -0.4229, "name": "Makan + dapur kering", "text": "Meja makan menyambung lurus dengan island, di perbatasan ruang keluarga dan dapur kering: kulkas, meja sink, dan pintu kaca ke dapur basah di belakangnya."}, {"id": "tengah", "x": 5.9, "y": 9.25, "f": "gf", "yaw": -1.2341, "name": "Ruang tengah", "text": "Bekas ruang makan, sekarang ruang duduk. Dua set pintu kaca geser membukanya ke lorong: buka semua dan angin dari roster mengalir lewat rumah lalu naik lewat void."}, {"id": "aisle", "x": 8.5, "y": 9.4, "f": "gf", "yaw": 0.0, "name": "Lorong utara", "text": "Lebar 1 m dan terbuka ke langit. Angin masuk lewat roster di jalan dan mengalir sampai taman belakang."}, {"id": "terrace", "x": 7.5, "y": 13.9, "f": "gf", "yaw": 0.1489, "name": "Dapur basah", "text": "Dapur basah semi-outdoor: kompor, hood, dan sink di dinding mushalla. Pintu kaca geser ke lorong dan taman dibuka penuh siang hari dan ditutup rapat malam hari (karet seal, tanpa celah untuk tikus)."}, {"id": "wudu", "x": 3.5, "y": 13.95, "f": "gf", "yaw": 1.3258, "name": "Wudu", "text": "Satu keran dengan bangku kecil dan floor drain, 1.4 × 1.2 m. Pintu di depan langsung ke mushalla; gudang ada di balik dinding kiri."}, {"id": "mushalla", "x": 4.75, "y": 13.95, "f": "gf", "yaw": -0.4324, "name": "Mushalla", "text": "2.0 × 2.4 m untuk dua orang, dimasuki dari tempat wudu lewat pintu kaca geser bening, menghadap kiblat (295°, panah di lantai), dengan pintu kaca ke taman belakang."}, {"id": "backyard", "x": 6.4, "y": 16.85, "f": "gf", "yaw": -2.8501, "name": "Taman belakang", "text": "Terbuka ke langit, tanamannya rendah: bak tanaman batu berisi perdu dan rumput hias di dinding belakang, dan taman vertikal di tembok batas. Menoleh ke rumah: pintu kaca mushalla, laundry, dan jendela kamar utama di atas. Di pojok kanan belakang Anda: pompa yang sudah ada, di balik kisi oak; pompa ini mengisi toren di dak atap kamar utama."}, {"id": "laundry", "x": 4.0, "y": 16.75, "f": "gf", "yaw": 1.4711, "name": "Laundry", "text": "5.0 × 2.0 m dengan mesin cuci, pengering, bak, dan meja servis. Pintunya terbuka ke taman belakang."}, {"id": "maid", "x": 1.65, "y": 14.0, "f": "gf", "yaw": 1.0304, "name": "Kamar ART", "text": "Tempat tidur, lemari, dan WC kecil, masuk dari laundry."}, {"id": "gallery", "x": 5.0, "y": 9.75, "f": "uf", "yaw": 1.068, "name": "Galeri atas", "text": "Tangga tiba di sini di samping void. Railing kaca di atas ruang keluarga; kamar anak di belakang Anda."}, {"id": "kid1", "x": 2.15, "y": 8.5, "f": "uf", "yaw": 2.9442, "name": "Kamar anak 1", "text": "3.3 × 3.5 m. Pintu geser kaca terbuka ke balkon 1.2 m sendiri."}, {"id": "bal1", "x": 2.45, "y": 5.05, "f": "uf", "yaw": 2.8501, "name": "Balkon 1", "text": "Boks berbingkai 3.3 × 1.2 m di atas kanopi carport: sirip kayu oak putar di kanan Anda, pot tanaman dan railing kaca di depan, pemandangan ke jalan. Unit luar AC tersembunyi di balik kisi oak di kiri."}, {"id": "kid2", "x": 6.15, "y": 8.45, "f": "uf", "yaw": -2.9442, "name": "Kamar anak 2", "text": "2.7 × 3.5 m dengan balkon di depan dan jendela samping ke lorong."}, {"id": "bal2", "x": 5.95, "y": 5.05, "f": "uf", "yaw": -2.8501, "name": "Balkon 2", "text": "Boks berbingkai 2.7 × 1.2 m di atas foyer: pot tanaman di depan, sirip kayu oak putar di kiri Anda."}, {"id": "family", "x": 5.85, "y": 12.35, "f": "uf", "yaw": -1.5208, "name": "Ruang kerja", "text": "Ruang kerja tertutup 2.6 × 2.0 m untuk meeting online: meja menghadap jendela utara (cahaya lembut di wajah), rak, panel akustik oak di belakang Anda, pintu solid-core."}, {"id": "master", "x": 3.3, "y": 14.15, "f": "uf", "yaw": 0.3367, "name": "Kamar utama", "text": "4.6 × 4.4 m di belakang yang tenang: jendela barat dengan sirip oak, walk-in closet dan KM dalam di belakang Anda."}], "up": "Naik ↑", "down": "Turun ↓", "opening_gate": "Membuka pagar…", "opening_door": "Membuka pintu orang…"};
+  const EYE = 1.6, PITCH = { bal1: -0.3, bal2: -0.3, carport: -0.06, living: 0.15, street: 0.04, wudu: -0.2, terrace: -0.1, mushalla: -0.3 };
   const yawOf = (dx, dy) => Math.atan2(-dx, dy);                       // plan direction -> camera yaw
   const STOPS = WT.stops.map(s => ({ ...s, fz: s.f === 'uf' ? UF : (s.id === 'street' ? -0.15 : 0) }));
   const SID = Object.fromEntries(STOPS.map(s => [s.id, s]));
@@ -1102,7 +1269,7 @@ body.walking #stage canvas{touch-action:none}
   }
   let walkPrev = 'tour';
   async function enterWalk(autoGate) {
-    if (walk.on) return;
+    if (walk.on || game.on) return;
     walkPrev = exploring ? 'explore' : 'tour';
     if (exploring) { exploring = false; document.body.classList.remove('exploring'); tools.hidden = true; }
     walk.on = true; document.body.classList.add('walking'); walkUI.hidden = false; if (lenis) lenis.stop();
@@ -1131,7 +1298,7 @@ body.walking #stage canvas{touch-action:none}
   const pick = new THREE.Raycaster(), ndc = new THREE.Vector2(); let downAt = null;
   cv.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY }; });
   cv.addEventListener('click', e => {
-    if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;
+    if (game.on || !downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;
     const r = cv.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
     pick.setFromCamera(ndc, camera);
     if (walk.on) {
@@ -1143,7 +1310,7 @@ body.walking #stage canvas{touch-action:none}
     if (S.mix < 0.5 && pick.intersectObjects([gateL, gateR, doorG], true).length) enterWalk(true);
   });
   cv.addEventListener('pointermove', e => {
-    if (pts.size) return;
+    if (pts.size || game.on) return;
     const r = cv.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
     pick.setFromCamera(ndc, camera);
     const targets = walk.on ? rings.filter(g => g.visible).concat(walk.cur === 'street' ? [gateL, gateR, doorG] : []) : (S.mix < 0.5 ? [gateL, gateR, doorG] : []);
@@ -1158,6 +1325,239 @@ body.walking #stage canvas{touch-action:none}
     walkLight.position.copy(P); walkLight.intensity = 0.85;
     const k = 1 + Math.sin(time * 3) * 0.06; rings.forEach(g => g.userData.ring.scale.setScalar(k));
   }
+
+
+  // ---------- game mode: free first-person walk at a chosen body height, collision, stairs, auto doors ----------
+  const GT = {"btn": "Mode game", "exit": "Keluar", "third": "Orang ke-3", "first": "Orang ke-1", "height": "Tinggi", "eyebrow": "Mode game · tinggi {h} cm · mata {e} cm", "ceil": "Plafon {c} m · {d} cm di atas kepala", "ceilLow": "Plafon {c} m · kurang {d} cm", "sky": "Langit terbuka di atas", "door": "Pintu 2.10 m · sisa {d} cm di atas kepala", "doorLow": "Pintu 2.10 m · kurang {d} cm, awas kepala", "stair": "Tangga · tinggi anak tangga 18.9 cm · lebar 27 cm", "bump": "Awas kepala! Tinggi bebas di sini lebih rendah dari tinggi Anda.", "start": "Klik layar untuk mulai", "hintLock": "Gerakkan mouse untuk melihat · tahan klik kiri atau W untuk jalan · klik kanan atau S mundur · A/D geser · Shift lari · V orang ke-3 · Esc keluar", "hintFree": "Arahkan kursor ke tepi layar untuk menoleh · tahan tombol mouse untuk jalan · W/A/S/D juga bisa · Esc keluar", "hintTouch": "Geser di sisi kiri untuk jalan · geser di sisi kanan untuk melihat", "floors": ["Lantai 1", "Lantai 2"], "gf": [["Jalan", -20, -20, 30, 0], ["Taman depan", 5.6, 0, 8.0, 2.5], ["Carport", 0, 0, 5.6, 5.5], ["Foyer", 5.6, 2.5, 8.0, 5.5], ["Lorong samping", 8.0, 0, 9.0, 15.8], ["WC", 5.3, 5.5, 6.6, 7.0], ["Kamar tamu", 0, 5.5, 3.3, 9.0], ["Bawah tangga", 3.3, 5.5, 5.3, 9.0], ["Hall", 5.3, 5.5, 8.0, 9.0], ["Ruang tengah", 4.4, 9.0, 8.0, 11.2], ["Dapur kering & meja makan", 3.3, 11.2, 8.0, 13.4], ["Ruang keluarga", 0, 9.0, 4.4, 13.4], ["KM ART", 2.0, 14.6, 3.0, 15.8], ["Kamar ART", 0, 13.4, 3.0, 15.8], ["Wudu", 3.0, 13.4, 4.4, 14.6], ["Gudang", 3.0, 14.6, 4.4, 15.8], ["Mushalla", 4.4, 13.4, 6.4, 15.8], ["Dapur basah", 6.4, 13.4, 8.0, 15.8], ["Laundry", 0, 15.8, 5.0, 17.8], ["Taman belakang", 5.0, 15.8, 9.0, 17.8]], "uf": [["Balkon 1", 0, 4.2, 3.3, 5.5], ["Balkon 2", 5.3, 4.2, 8.1, 5.5], ["Kamar anak 1", 0, 5.5, 3.3, 9.0], ["Kamar anak 2", 5.3, 5.5, 8.0, 9.0], ["Tangga", 3.3, 5.5, 5.3, 9.0], ["KM anak", 6.2, 9.0, 8.0, 11.4], ["Ruang kerja", 5.4, 11.4, 8.0, 13.4], ["Galeri / family", 0, 9.0, 6.2, 13.4], ["Closet", 4.6, 13.4, 8.0, 14.6], ["KM utama", 4.6, 14.6, 8.0, 15.8], ["Kamar utama", 0, 13.4, 4.6, 17.8]], "stairName": "Tangga"};
+  const game = { on: false, x: 4.0, y: -3.6, z: -0.15, ez: 0, yaw: 0, pitch: 0, h: 1.76, third: false, prev: 'tour', locked: false, lockFail: false,
+                 keys: {}, mb: 0, cx: 0, cy: 0, joy: null, look: null, last: 0, nearAt: null, n: 0, bumpT: 0, gate: false, door: false };
+  const gameUI = document.getElementById('gameUI'), gEye = document.getElementById('gEye'), gRoom = document.getElementById('gRoom'), gFloor = document.getElementById('gFloor');
+  const gInfo = document.getElementById('gInfo'), gDoor = document.getElementById('gDoor'), gHv = document.getElementById('gHv'), gView = document.getElementById('gView');
+  const gHint = document.getElementById('gHint'), gStart = document.getElementById('gStart'), gBump = document.getElementById('gBump'), gJoy = document.getElementById('gJoy');
+  const isTouch = matchMedia('(pointer: coarse)').matches;
+  const UFR = [[0, 5.5, 3.3, 10.2], [5.3, 5.5, 8.0, 10.2], [3.3, 9.0, 5.3, 10.2], [4.4, 10.2, 8.0, 13.4], [0, 13.4, 8.0, 15.8], [0, 15.8, 4.6, D], [0.15, 4.3, 3.15, 5.5], [5.45, 4.3, 7.925, 5.5]];
+  const inR = (x, y, r) => x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3];
+  const onStairZone = (x, y) => x > 3.25 && x < 5.35 && y > 5.45 && y < 9.45;
+  function surfaceAt(x, y, zc) {
+    const c = [];
+    if (y < 0) { if (x < -6 || x > 15 || y < -7) return null; c.push(-0.15); }
+    else { if (x < 0 || x > W || y > D) return null; c.push(0); }
+    if (x >= 4.35 && x <= 5.25 && y >= 6.5 && y <= 9.0) c.push((9 - y) / 0.27 * R);
+    if (x >= 3.35 && x <= 5.25 && y >= 5.55 && y <= 6.5) c.push(9 * R);
+    if (x >= 3.35 && x <= 4.3 && y >= 6.5 && y <= 9.0) c.push(9 * R + (y - 6.5) / 0.27 * R);
+    UFR.forEach(r => { if (inR(x, y, r)) c.push(UF); });
+    let best = -Infinity; c.forEach(v => { if (v <= zc + 0.45 && v > best) best = v; });
+    return best === -Infinity || best < zc - 0.3 ? null : best;
+  }
+  // collision meshes: everything opaque in the renovation model; door leaves / gate / street door are tracked live
+  let gAll = [], gDyn = [], gNear = [];
+  const RDOORS = () => DOORS.filter(d => d.group === gGround || d.group === gUpper);
+  function gameCache() {
+    gRoof.position.y = gUpper.position.y = 0; scene.updateMatrixWorld(true);
+    const dyn = new Set(); [gateL, gateR, doorG, ...RDOORS().map(d => d.pv)].forEach(g => g.traverse(m => { if (m.isMesh) dyn.add(m); }));
+    gAll = []; gDyn = [...dyn];
+    [site, gGround, gUpper, gRoof].forEach(g => g.traverse(m => {
+      if (!m.isMesh || dyn.has(m) || !m.material || m.material.userData.base !== 1) return;
+      if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+      const s = m.geometry.boundingSphere.clone().applyMatrix4(m.matrixWorld); gAll.push({ m, c: s.center, r: s.radius });
+    }));
+    game.nearAt = null;
+  }
+  function gameNear() {
+    const P = V(game.x, game.y, game.z + 1);
+    if (game.nearAt && game.nearAt.distanceTo(P) < 0.6) return;
+    game.nearAt = P; gNear = gAll.filter(o => o.c.distanceTo(P) < o.r + 3.2).map(o => o.m).concat(gDyn);
+  }
+  const gRay = new THREE.Raycaster();
+  // returns 0 clear, 1 blocked low (body), 2 blocked only at head height
+  function blocked(dx, dy, d) {
+    const hs = [0.3, 0.7, 1.1, 1.5, game.h - 0.1, game.h].filter(v => !(v === 0.3 && onStairZone(game.x, game.y)));
+    const dir = new THREE.Vector3(dx, 0, -dy), px = -dy, py = dx; let low = false, high = false;
+    for (const hh of hs) for (const o of [-0.15, 0, 0.15]) {
+      gRay.set(V(game.x + px * o, game.y + py * o, game.z + hh), dir); gRay.far = d + 0.24;
+      const hit = gRay.intersectObjects(gNear, false)[0];
+      if (hit) { game.lastHit = [hh, o, hit.object]; if (hh >= 1.4) high = true; else low = true; break; }
+    }
+    return low ? 1 : (high ? 2 : 0);
+  }
+  function tryMove(mx, my) {
+    const d = Math.hypot(mx, my); if (d < 1e-6) return;
+    const nz = surfaceAt(game.x + mx, game.y + my, game.z); if (nz === null) return;
+    const b = blocked(mx / d, my / d, d);
+    if (b) { if (b === 2 && game.bumpT <= 0) { gBump.textContent = GT.bump; gBump.classList.add('on'); game.bumpT = 2.2; } return; }
+    game.x += mx; game.y += my; game.z = nz;
+  }
+  const keyOn = (...k) => k.some(c => game.keys[c]);
+  function gameStep(dt) {
+    let f = 0, s = 0;
+    if (keyOn('KeyW', 'ArrowUp') || game.mb === 1) f += 1;
+    if (keyOn('KeyS', 'ArrowDown') || game.mb === 2) f -= 1;
+    if (keyOn('KeyA')) s -= 1; if (keyOn('KeyD')) s += 1;
+    if (keyOn('ArrowLeft', 'KeyQ')) game.yaw += 1.8 * dt; if (keyOn('ArrowRight', 'KeyE')) game.yaw -= 1.8 * dt;
+    if (game.joy) { f += -game.joy.dy; s += game.joy.dx; }
+    if (!game.locked && !isTouch && game.lockFail) {             // cursor steering when the pointer cannot be locked
+      const ax = Math.abs(game.cx) > 0.2 ? (Math.abs(game.cx) - 0.2) / 0.8 * Math.sign(game.cx) : 0;
+      game.yaw -= ax * 1.7 * dt; game.pitch += ((-game.cy * 0.7) - game.pitch) * Math.min(1, dt * 3);
+    }
+    const n = Math.hypot(f, s); if (n > 1) { f /= n; s /= n; }
+    const sp = (keyOn('ShiftLeft', 'ShiftRight') ? 2.8 : 1.4) * (game.k || 1) * dt, th = game.yaw;
+    const dx = (-Math.sin(th) * f + Math.cos(th) * s) * sp, dy = (Math.cos(th) * f + Math.sin(th) * s) * sp;
+    if (dx || dy) { gameNear(); tryMove(dx, 0); tryMove(0, dy); }
+    else { const z = surfaceAt(game.x, game.y, game.z); if (z !== null) game.z = z; }
+    game.ez += (game.z - game.ez) * Math.min(1, dt * 10);
+    game.pitch = THREE.MathUtils.clamp(game.pitch, -1.35, 1.35);
+    if (game.bumpT > 0) { game.bumpT -= dt; if (game.bumpT <= 0) gBump.classList.remove('on'); }
+    // street gate + people door open as you come close; inner doors swing away from you
+    const gd = Math.hypot(game.x - 4.1, game.y), pd = Math.hypot(game.x - 6.45, game.y);
+    if (gd < 3.2) game.gate = true; else if (gd > 5) game.gate = false;
+    if (pd < 1.7) game.door = true; else if (pd > 3) game.door = false;
+    const gx = gateR.position;
+    if (game.gate) { if (gx.z > -0.12) gx.z = Math.max(-0.12, gx.z - dt * 0.4); else gx.x = Math.max(-2.6, gx.x - dt * 1.7); }
+    else { if (gx.x < 0) gx.x = Math.min(0, gx.x + dt * 1.7); else gx.z = Math.min(0, gx.z + dt * 0.4); }
+    doorG.rotation.y += ((game.door ? 1.45 : 0) - doorG.rotation.y) * Math.min(1, dt * 4);
+    const up = game.z > 2.5;
+    RDOORS().forEach(d => {
+      const same = (d.z0 > 1) === up, dist = Math.hypot(game.x - d.x, game.y - d.y);
+      if (same && dist < 1.4 && !d.target) d.target = ((d.horiz ? game.y < d.y : game.x > d.x) ? 1.5 : -1.5) * (d.flip || 1);
+      else if (!same || dist > 2.2) d.target = 0;
+      d.ang += (d.target - d.ang) * Math.min(1, dt * 4.5); d.pv.rotation.y = d.ang;
+    });
+  }
+  // mannequin for the 3rd-person view, scaled to the chosen height
+  const avatar = new THREE.Group(); avatar.visible = false; scene.add(avatar);
+  const avMat = new THREE.MeshStandardMaterial({ color: '#d9692e', roughness: 0.6 });
+  let avTag = null;
+  function buildAvatar() {
+    while (avatar.children.length) avatar.remove(avatar.children[0]);
+    const h = game.h, hr = 0.115 * h / 1.76, body = h - 2 * hr - 0.02;
+    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.17, Math.max(0.2, body - 0.34), 6, 14), avMat); torso.position.y = body / 2; torso.castShadow = true;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(hr, 18, 14), avMat); head.position.y = h - hr; head.castShadow = true;
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.04, 0.08), avMat); nose.position.set(0, h - hr, -hr);
+    avTag = tagSprite(Math.round(h * 100) + ' cm'); avTag.position.y = h + 0.22; avatar.add(torso, head, nose, avTag);
+  }
+  const gRoomOf = () => {
+    if (onStairZone(game.x, game.y) && game.z > 0.12 && game.z < UF - 0.05) return GT.stairName;
+    const L = game.z > 2.5 ? GT.uf : GT.gf, r = L.find(r => inR(game.x, game.y, r.slice(1))); return r ? r[0] : '';
+  };
+  const upRay = new THREE.Raycaster();
+  function gameHud() {
+    gEye.textContent = GT.eyebrow.replace('{h}', Math.round(game.h * 100)).replace('{e}', Math.round(game.h * 93.5));
+    const room = gRoomOf(); if (gRoom.textContent !== room) gRoom.textContent = room;
+    gFloor.textContent = game.y < 0 ? '' : GT.floors[game.z > 2.5 ? 1 : 0];
+    gameNear();
+    upRay.set(V(game.x, game.y, game.z + 0.4), new THREE.Vector3(0, 1, 0)); upRay.far = 12;
+    const hit = upRay.intersectObjects(gNear, false)[0];
+    if (onStairZone(game.x, game.y) && game.z > 0.12 && game.z < UF - 0.05) { gInfo.textContent = GT.stair; gInfo.dataset.low = 'false'; }
+    else if (!hit) { gInfo.textContent = GT.sky; gInfo.dataset.low = 'false'; }
+    else {
+      const c = hit.distance + 0.4, d = Math.round((c - game.h) * 100);
+      gInfo.textContent = (d >= 0 ? GT.ceil : GT.ceilLow).replace('{c}', c.toFixed(2)).replace('{d}', Math.abs(d)); gInfo.dataset.low = String(d < 0);
+    }
+    const up = game.z > 2.5, dn = RDOORS().filter(d => (d.z0 > 1) === up).map(d => [d, Math.hypot(game.x - d.x, game.y - d.y)]).sort((a, b) => a[1] - b[1])[0];
+    if (dn && dn[1] < 1.6) { const d = Math.round((2.1 - game.h) * 100); gDoor.hidden = false; gDoor.textContent = (d >= 0 ? GT.door : GT.doorLow).replace('{d}', Math.abs(d)); gDoor.dataset.low = String(d < 0); }
+    else gDoor.hidden = true;
+  }
+  const camRay = new THREE.Raycaster();
+  function gameCam(time) {
+    const now = time, dt = Math.min(0.05, Math.max(0, now - game.last)); game.last = now;
+    gameStep(dt);
+    const th = game.yaw, ph = game.pitch, E = V(game.x, game.y, game.ez + game.h * 0.935);
+    const fw = new THREE.Vector3(-Math.sin(th) * Math.cos(ph), Math.sin(ph), -Math.cos(th) * Math.cos(ph));
+    if (game.third) {
+      avatar.visible = true; avatar.position.copy(V(game.x, game.y, game.ez)); avatar.rotation.y = th;
+      const back = new THREE.Vector3(Math.sin(th), 0, Math.cos(th)), want = E.clone().addScaledVector(back, 2.6).add(new THREE.Vector3(0, 0.45 - Math.sin(ph) * 1.2, 0));
+      const dv = want.clone().sub(E), len = dv.length(); camRay.set(E, dv.normalize()); camRay.far = len;
+      const h = camRay.intersectObjects(gNear, false)[0], k = h ? Math.max(0.25, h.distance - 0.2) : len;
+      camera.position.copy(E).addScaledVector(dv, k); camera.lookAt(E.clone().addScaledVector(fw, 2));
+    } else { avatar.visible = false; camera.position.copy(E); camera.lookAt(E.clone().add(fw)); }
+    walkLight.position.copy(E); walkLight.intensity = 0.85;
+    if (++game.n % 6 === 0) gameHud();
+  }
+  function setH(h) {
+    game.h = THREE.MathUtils.clamp(Math.round(h * 100) / 100, 1.0, 2.2); gHv.textContent = Math.round(game.h * 100) + ' cm'; buildAvatar(); gameHud();
+  }
+  document.getElementById('gHm').addEventListener('click', () => setH(game.h - 0.02));
+  document.getElementById('gHp').addEventListener('click', () => setH(game.h + 0.02));
+  function setThird(on) { game.third = on; gView.textContent = on ? GT.first : GT.third; gView.setAttribute('aria-pressed', String(on)); }
+  gView.addEventListener('click', () => setThird(!game.third));
+  function enterGame() {
+    if (game.on) return;
+    game.prev = exploring ? 'explore' : 'tour';
+    if (walk.on) { walk.on = false; walk.cur = null; walk.busy = false; document.body.classList.remove('walking'); walkUI.hidden = true; ringG.visible = false; game.prev = walkPrev; }
+    if (exploring) { exploring = false; document.body.classList.remove('exploring'); tools.hidden = true; }
+    game.on = true; document.body.classList.add('gaming'); gameUI.hidden = false; if (lenis) lenis.stop();
+    gsap.killTweensOf(S); gsap.set(S, { roof: 0, upper: 0, lUF: 0, lGF: 0, air: 0, qibla: 0, mix: 0, zone: 0, circ: 0, priv: 0, mep: 0 });
+    gsap.killTweensOf(gateR.position); gsap.killTweensOf(doorG.rotation); gateR.position.set(0, 0, 0); doorG.rotation.y = 0; gateOpen = doorOpen = false;
+    Object.assign(game, { x: 4.0, y: -3.8, z: -0.15, ez: -0.15, yaw: 0, pitch: 0.02, keys: {}, mb: 0, joy: null, gate: false, door: false, last: clock.getElapsedTime() });
+    RDOORS().forEach(d => { d.ang = d.target = 0; d.pv.rotation.y = 0; });
+    gameCache(); buildAvatar(); setThird(false); gHv.textContent = Math.round(game.h * 100) + ' cm';
+    gHint.textContent = isTouch ? GT.hintTouch : GT.hintLock; gStart.hidden = isTouch; fit(); gameHud();
+    dip.style.opacity = 1; gsap.to(dip, { opacity: 0, duration: 0.6 });
+  }
+  function exitGame() {
+    if (!game.on) return;
+    if (document.pointerLockElement) document.exitPointerLock();
+    game.on = false; document.body.classList.remove('gaming', 'locked'); gameUI.hidden = true; avatar.visible = false;
+    gateR.position.set(0, 0, 0); doorG.rotation.y = 0; RDOORS().forEach(d => { d.ang = d.target = 0; d.pv.rotation.y = 0; });
+    gsap.set(orbit, { yaw: 0, pitch: 0, zoom: 1 }); fit();
+    if (game.prev === 'explore') enterExplore(); else { exploring = true; exitExplore(); }
+    dip.style.opacity = 1; gsap.to(dip, { opacity: 0, duration: 0.5 });
+  }
+  ['gameBtn', 'gameBtn2'].forEach(id => document.getElementById(id).addEventListener('click', enterGame));
+  document.getElementById('gExit').addEventListener('click', exitGame);
+  // input: pointer lock + mouse look on desktop; cursor steering if the lock is refused; touch joystick + drag look on phones
+  let unlockAt = 0;
+  document.addEventListener('pointerlockchange', () => {
+    game.locked = document.pointerLockElement === cv; document.body.classList.toggle('locked', game.locked);
+    if (game.locked) { game.lockFail = false; gStart.hidden = true; gHint.textContent = GT.hintLock; } else { unlockAt = performance.now(); game.mb = 0; }
+  });
+  document.addEventListener('pointerlockerror', () => { game.lockFail = true; gStart.hidden = true; gHint.textContent = GT.hintFree; });
+  cv.addEventListener('pointerdown', e => {
+    if (!game.on) return;
+    if (e.pointerType === 'touch') {
+      const r = cv.getBoundingClientRect(), left = e.clientX - r.left < r.width / 2;
+      if (left && !game.joy) { game.joy = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0 }; gJoy.hidden = false; gJoy.style.left = e.clientX + 'px'; gJoy.style.top = e.clientY + 'px'; gJoy.firstChild.style.transform = ''; }
+      else if (!left && !game.look) game.look = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      return;
+    }
+    if (!game.locked && !game.lockFail) {
+      try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(() => { game.lockFail = true; gStart.hidden = true; gHint.textContent = GT.hintFree; }); }
+      catch (err) { game.lockFail = true; gStart.hidden = true; gHint.textContent = GT.hintFree; }
+    }
+    gStart.hidden = true;
+    if (!game.locked && !game.lockFail) setTimeout(() => { if (game.on && !game.locked && !game.lockFail) { game.lockFail = true; gHint.textContent = GT.hintFree; } }, 900);
+    game.mb = e.button === 2 ? 2 : 1;
+  });
+  window.addEventListener('pointerup', e => {
+    if (!game.on) return;
+    if (game.joy && e.pointerId === game.joy.id) { game.joy = null; gJoy.hidden = true; }
+    if (game.look && e.pointerId === game.look.id) game.look = null;
+    if (e.pointerType !== 'touch') game.mb = 0;
+  });
+  window.addEventListener('pointercancel', e => { if (game.joy && e.pointerId === game.joy.id) { game.joy = null; gJoy.hidden = true; } if (game.look && e.pointerId === game.look.id) game.look = null; });
+  window.addEventListener('pointermove', e => {
+    if (!game.on) return;
+    if (game.joy && e.pointerId === game.joy.id) {
+      let dx = (e.clientX - game.joy.x0) / 48, dy = (e.clientY - game.joy.y0) / 48; const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
+      game.joy.dx = dx; game.joy.dy = dy; gJoy.firstChild.style.transform = `translate(${dx * 30}px,${dy * 30}px)`; return;
+    }
+    if (game.look && e.pointerId === game.look.id) { game.yaw -= (e.clientX - game.look.x) * 0.006; game.pitch -= (e.clientY - game.look.y) * 0.005; game.look.x = e.clientX; game.look.y = e.clientY; return; }
+    if (game.locked) { game.yaw -= e.movementX * 0.0024; game.pitch -= e.movementY * 0.0022; }
+    else { const r = cv.getBoundingClientRect(); game.cx = (e.clientX - r.left) / r.width * 2 - 1; game.cy = (e.clientY - r.top) / r.height * 2 - 1; }
+  });
+  cv.addEventListener('contextmenu', e => { if (game.on) e.preventDefault(); });
+  window.addEventListener('keydown', e => {
+    if (!game.on) return;
+    if (e.code === 'Escape') { if (!game.locked && performance.now() - unlockAt > 400) exitGame(); return; }
+    if (e.target && e.target.closest && e.target.closest('button') && (e.code === 'Space' || e.code === 'Enter')) return;
+    if (e.code === 'KeyV') setThird(!game.third);
+    if (e.code === 'Equal' || e.code === 'NumpadAdd') setH(game.h + 0.02);
+    if (e.code === 'Minus' || e.code === 'NumpadSubtract') setH(game.h - 0.02);
+    if (/^(Arrow|Key[WASDQE]|Shift|Space)/.test(e.code)) e.preventDefault();
+    game.keys[e.code] = true;
+  });
+  window.addEventListener('keyup', e => { game.keys[e.code] = false; });
+  window.addEventListener('blur', () => { game.keys = {}; game.mb = 0; });
 
   // ---------- frame ----------
   function fade(group, o) {
@@ -1189,7 +1589,7 @@ body.walking #stage canvas{touch-action:none}
       off.applyAxisAngle(side, -p).multiplyScalar(orbit.zoom);
       cp = tgt.clone().add(off);
     }
-    if (walk.on) walkCam(time); else { camera.position.copy(cp); camera.lookAt(tgt); walkLight.intensity = 0; }
+    if (game.on) gameCam(time); else if (walk.on) walkCam(time); else { camera.position.copy(cp); camera.lookAt(tgt); walkLight.intensity = 0; }
     const nr = 1 - S.mix, ne = S.mix;
     gRoof.position.y = eRoof.position.y = S.roof * 6; gUpper.position.y = eUpper.position.y = S.upper * 5;
     fade(site, nr); fade(gGround, nr); fade(gRoof, (1 - S.roof) * nr); fade(gUpper, (1 - S.upper) * nr * (1 - 0.8 * S.mep));
@@ -1231,6 +1631,7 @@ body.walking #stage canvas{touch-action:none}
     camera.aspect = w / hgt; camera.fov = narrow ? 52 : 38;
     if (narrow) camera.setViewOffset(w, hgt, 0, hgt * 0.14, w, hgt); else camera.setViewOffset(w, hgt, -w * 0.16, 0, w, hgt);
     if (walk.on) { camera.clearViewOffset(); camera.fov = 74 * orbit.zoom; }
+    if (game.on) { camera.clearViewOffset(); camera.fov = narrow ? 80 : 72; }
     camera.updateProjectionMatrix(); renderer.setSize(w, hgt);
   }
   window.addEventListener('resize', () => { fit(); ScrollTrigger.refresh(); });
